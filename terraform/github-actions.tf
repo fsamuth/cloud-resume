@@ -46,7 +46,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetBucketPolicy",
       "s3:GetBucketAcl",
       "s3:GetBucketCORS",
-      "s3:GetBucketWebsite"
+      "s3:GetBucketWebsite",
+      "s3:GetBucketVersioning"
     ]
     resources = [
       aws_s3_bucket.resume.arn,
@@ -127,7 +128,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "iam:GetRole",
       "iam:ListRolePolicies",
-      "iam:GetRolePolicy"
+      "iam:GetRolePolicy",
+      "iam:ListAttachedRolePolicies"
     ]
     resources = [
       aws_iam_role.github_actions.arn

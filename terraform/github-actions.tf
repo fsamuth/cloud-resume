@@ -42,7 +42,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutObject",
       "s3:GetObject",
       "s3:DeleteObject",
-      "s3:ListBucket"
+      "s3:ListBucket",
+      "s3:GetBucketPolicy"
     ]
     resources = [
       aws_s3_bucket.resume.arn,
@@ -58,7 +59,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "dynamodb:PutItem",
       "dynamodb:GetItem",
-      "dynamodb:DeleteItem"
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable"
     ]
     resources = [
       aws_dynamodb_table.tfstate_lock.arn
@@ -71,7 +73,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "cloudfront:CreateInvalidation",
-      "cloudfront:GetInvalidation"
+      "cloudfront:GetInvalidation",
+      "cloudfront:GetOriginAccessControl"
     ]
     resources = [
       aws_cloudfront_distribution.resume.arn
@@ -83,7 +86,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "acm:GetCertificate",
-      "acm:ListTagsForCertificate"
+      "acm:ListTagsForCertificate",
+      "acm:DescribeCertificate"
     ]
     resources = [
       aws_acm_certificate.cert.arn
@@ -94,7 +98,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     sid    = "IAM"
     effect = "Allow"
     actions = [
-      "iam:GetOpenIDConnectProvider"
+      "iam:GetOpenIDConnectProvider",
+      "iam:GetRole"
     ]
     resources = [
       aws_iam_openid_connect_provider.github_actions.arn

@@ -29,7 +29,7 @@ resource "aws_cloudfront_origin_access_control" "resume" {
 }
 
 resource "aws_cloudfront_distribution" "resume" {
-  aliases             = ["cv.samuth.com"]
+  aliases             = ["fidele.samuth.com"]
   enabled             = true
   default_root_object = "index.html"
   price_class         = "PriceClass_100"

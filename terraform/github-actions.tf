@@ -43,7 +43,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetObject",
       "s3:DeleteObject",
       "s3:ListBucket",
-      "s3:GetBucketPolicy"
+      "s3:GetBucketPolicy",
+      "s3:GetBucketAcl"
     ]
     resources = [
       aws_s3_bucket.resume.arn,
@@ -60,7 +61,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "dynamodb:PutItem",
       "dynamodb:GetItem",
       "dynamodb:DeleteItem",
-      "dynamodb:DescribeTable"
+      "dynamodb:DescribeTable",
+      "dynamodb:DescribeContinuousBackups"
     ]
     resources = [
       aws_dynamodb_table.tfstate_lock.arn
@@ -95,14 +97,24 @@ data "aws_iam_policy_document" "github_actions_policy" {
   }
 
   statement {
-    sid    = "IAM"
+    sid    = "IAMOpenIDConnect"
     effect = "Allow"
     actions = [
       "iam:GetOpenIDConnectProvider",
-      "iam:GetRole"
     ]
     resources = [
       aws_iam_openid_connect_provider.github_actions.arn
+    ]
+  }
+
+  statement {
+    sid    = "IAMRole"
+    effect = "Allow"
+    actions = [
+      "iam:GetRole"
+    ]
+    resources = [
+      aws_iam_role.github_actions.arn
     ]
   }
 }

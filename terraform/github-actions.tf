@@ -27,27 +27,77 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
 
 }
 
-resource "aws_iam_role_policy_attachment" "github_actions_s3" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+resource "aws_iam_role_policy" "github_actions" {
+  name   = "github-actions-resume-policy"
+  role   = aws_iam_role.github_actions.id
+  policy = data.aws_iam_policy_document.github_actions_policy.json
+
 }
 
-resource "aws_iam_role_policy_attachment" "github_actions_cloudfront" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudFrontFullAccess"
-}
+data "aws_iam_policy_document" "github_actions_policy" {
+  statement {
+    sid    = "S3"
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      aws_s3_bucket.resume.arn,
+      aws_s3_bucket.tfstate.arn,
+      "${aws_s3_bucket.resume.arn}/*",
+      "${aws_s3_bucket.tfstate.arn}/*"
+    ]
+  }
 
-resource "aws_iam_role_policy_attachment" "github_actions_dynamodb" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-}
+  statement {
+    sid    = "DynamoDB"
+    effect = "Allow"
+    actions = [
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:DeleteItem"
+    ]
+    resources = [
+      aws_dynamodb_table.tfstate_lock.arn
+    ]
 
-resource "aws_iam_role_policy_attachment" "github_actions_acm" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCertificateManagerFullAccess"
-}
+  }
 
-resource "aws_iam_role_policy_attachment" "github_actions_iam_readonly" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/IAMReadOnlyAccess"
+  statement {
+    sid    = "CloudFront"
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateInvalidation",
+      "cloudfront:GetInvalidation"
+    ]
+    resources = [
+      aws_cloudfront_distribution.resume.arn
+    ]
+  }
+
+  statement {
+    sid    = "ACM"
+    effect = "Allow"
+    actions = [
+      "acm:GetCertificate",
+      "acm:ListTagsForCertificate"
+    ]
+    resources = [
+      aws_acm_certificate.cert.arn
+    ]
+  }
+
+  statement {
+    sid    = "IAM"
+    effect = "Allow"
+    actions = [
+      "iam:GetOpenIDConnectProvider"
+    ]
+    resources = [
+      aws_iam_openid_connect_provider.github_actions.arn
+    ]
+  }
 }

@@ -48,7 +48,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetBucketCORS",
       "s3:GetBucketWebsite",
       "s3:GetBucketVersioning",
-      "s3:GetAccelerateConfiguration"
+      "s3:GetAccelerateConfiguration",
+      "s3:GetBucketRequestPayment"
     ]
     resources = [
       aws_s3_bucket.resume.arn,

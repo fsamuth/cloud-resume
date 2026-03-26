@@ -51,7 +51,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetAccelerateConfiguration",
       "s3:GetBucketRequestPayment",
       "s3:GetBucketLogging",
-      "s3:GetLifecycleConfiguration"
+      "s3:GetLifecycleConfiguration",
+      "s3:GetReplicationConfiguration"
     ]
     resources = [
       aws_s3_bucket.resume.arn,

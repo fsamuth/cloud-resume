@@ -75,4 +75,15 @@ data "aws_iam_policy_document" "github_actions_policy" {
       aws_cloudfront_distribution.resume.arn
     ]
   }
+
+  statement {
+    sid    = "ACMWrite"
+    effect = "Allow"
+    actions = [
+      "acm:RequestCertificate",
+      "acm:DeleteCertificate"
+    ]
+    resources = ["*"]
+  }
+
 }

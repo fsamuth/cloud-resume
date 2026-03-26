@@ -1,6 +1,6 @@
 
 resource "aws_s3_bucket" "resume" {
-  bucket = "${var.project_name}"
+  bucket = var.project_name
 }
 
 resource "aws_s3_bucket_public_access_block" "resume" {
@@ -29,7 +29,7 @@ resource "aws_cloudfront_origin_access_control" "resume" {
 }
 
 resource "aws_cloudfront_distribution" "resume" {
-  aliases = ["cv.samuth.com"]
+  aliases             = ["cv.samuth.com"]
   enabled             = true
   default_root_object = "index.html"
   price_class         = "PriceClass_100"
@@ -45,8 +45,8 @@ resource "aws_cloudfront_distribution" "resume" {
     }
   }
   viewer_certificate {
-    acm_certificate_arn = aws_acm_certificate.cert.arn
-    ssl_support_method = "sni-only"
+    acm_certificate_arn      = aws_acm_certificate.cert.arn
+    ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
   default_cache_behavior {

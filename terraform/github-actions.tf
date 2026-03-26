@@ -41,3 +41,13 @@ resource "aws_iam_role_policy_attachment" "github_actions_dynamodb" {
   role       = aws_iam_role.github_actions.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
+
+resource "aws_iam_role_policy_attachment" "github_actions_acm" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCertificateManagerFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_iam_readonly" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/IAMReadOnlyAccess"
+}

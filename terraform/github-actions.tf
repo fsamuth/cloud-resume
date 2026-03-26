@@ -48,7 +48,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:DeleteObject"
     ]
     resources = [
-      "${aws_s3_bucket.resume.arn}/*"
+      "${aws_s3_bucket.resume.arn}/*",
+      "${aws_s3_bucket.tfstate.arn}/*"
     ]
   }
 

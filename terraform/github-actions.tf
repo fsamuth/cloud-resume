@@ -44,7 +44,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:DeleteObject",
       "s3:ListBucket",
       "s3:GetBucketPolicy",
-      "s3:GetBucketAcl"
+      "s3:GetBucketAcl",
+      "s3:GetBucketCORS"
     ]
     resources = [
       aws_s3_bucket.resume.arn,
@@ -62,7 +63,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "dynamodb:GetItem",
       "dynamodb:DeleteItem",
       "dynamodb:DescribeTable",
-      "dynamodb:DescribeContinuousBackups"
+      "dynamodb:DescribeContinuousBackups",
+      "dynamodb:DescribeTimeToLive"
     ]
     resources = [
       aws_dynamodb_table.tfstate_lock.arn
@@ -71,15 +73,25 @@ data "aws_iam_policy_document" "github_actions_policy" {
   }
 
   statement {
-    sid    = "CloudFront"
+    sid    = "CloudFrontDistribution"
     effect = "Allow"
     actions = [
       "cloudfront:CreateInvalidation",
-      "cloudfront:GetInvalidation",
-      "cloudfront:GetOriginAccessControl"
+      "cloudfront:GetInvalidation"
     ]
     resources = [
       aws_cloudfront_distribution.resume.arn
+    ]
+  }
+
+  statement {
+    sid = "CloudFrontOAC"
+    effect = "Allow"
+    actions = [
+      "cloudfront:GetOriginAccessControl"
+    ]
+    resources = [
+      aws_cloudfront_origin_access_control.resume.arn
     ]
   }
 
@@ -111,7 +123,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     sid    = "IAMRole"
     effect = "Allow"
     actions = [
-      "iam:GetRole"
+      "iam:GetRole",
+      "iam:ListRolePolicies"
     ]
     resources = [
       aws_iam_role.github_actions.arn

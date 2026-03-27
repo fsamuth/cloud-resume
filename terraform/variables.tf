@@ -9,3 +9,15 @@ variable "project_name" {
   type        = string
   default     = "fsamuth-resume"
 }
+
+variable "domain_name" {
+  description = "Domain name"
+  type        = string
+  default     = "fidele.samuth.com"
+}
+
+variable "repo_ref" {
+  description = "Repository Ref"
+  type        = string
+  default     = "repo:fsamuth/cloud-resume:ref:refs/heads/main"
+}

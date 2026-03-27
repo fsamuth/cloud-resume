@@ -1,4 +1,3 @@
-
 resource "aws_s3_bucket" "resume" {
   bucket = var.project_name
 }
@@ -29,7 +28,7 @@ resource "aws_cloudfront_origin_access_control" "resume" {
 }
 
 resource "aws_cloudfront_distribution" "resume" {
-  aliases             = ["fidele.samuth.com"]
+  aliases             = [var.domain_name]
   enabled             = true
   default_root_object = "index.html"
   price_class         = "PriceClass_100"

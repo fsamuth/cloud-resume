@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:fsamuth/cloud-resume:ref:refs/heads/main"]
+      values   = [var.repo_ref]
     }
   }
 
@@ -33,11 +33,6 @@ resource "aws_iam_role_policy" "github_actions" {
   policy = data.aws_iam_policy_document.github_actions_policy.json
 
 }
-
-# resource "aws_iam_role_policy_attachment" "github_actions_readonly" {
-#   role       = aws_iam_role.github_actions.name
-#   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
-# }
 
 data "aws_iam_policy_document" "github_actions_policy" {
   statement {

@@ -105,7 +105,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetEncryptionConfiguration",
       "s3:GetBucketObjectLockConfiguration",
       "s3:GetBucketPublicAccessBlock",
-      "s3:GetBucketTagging"
+      "s3:GetBucketTagging",
+      "s3:GetObjectTagging"
     ]
     resources = [
       aws_s3_bucket.resume.arn,

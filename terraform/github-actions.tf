@@ -176,7 +176,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "kms:Decrypt",
       "kms:Encrypt",
       "kms:GenerateDataKey",
-      "kms:DescribeKey"
+      "kms:DescribeKey",
+      "kms:GetKeyPolicy",
+      "kms:GetKeyRotationStatus",
+      "kms:ListResourceTags"
     ]
     resources = [aws_kms_key.tfstate_key.arn]
   }

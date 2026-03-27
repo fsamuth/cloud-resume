@@ -15,9 +15,3 @@ variable "domain_name" {
   type        = string
   default     = "fidele.samuth.com"
 }
-
-variable "repo_ref" {
-  description = "Repository Ref"
-  type        = string
-  default     = "repo:fsamuth/cloud-resume:ref:refs/heads/main"
-}

@@ -39,4 +39,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           terraform-cmd: tofu
-          planfile: terraform/tfplan
+          working-directory: terraform
+          planfile: tfplan

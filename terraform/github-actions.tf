@@ -159,6 +159,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     sid    = "DynamoDBRead"
     effect = "Allow"
     actions = [
+      "dynamodb:GetItem",
       "dynamodb:DescribeTable",
       "dynamodb:DescribeContinuousBackups",
       "dynamodb:DescribeTimeToLive",

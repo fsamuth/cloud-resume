@@ -38,4 +38,5 @@ jobs:
         uses: borchero/terraform-plan-comment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          terraform-cmd: tofu
           planfile: terraform/tfplan

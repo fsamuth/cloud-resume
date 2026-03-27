@@ -28,3 +28,20 @@ resource "aws_dynamodb_table" "tfstate_lock" {
     type = "S"
   }
 }
+
+resource "aws_kms_key" "tfstate_key" {
+  description             = "KMS key for Terraform state bucket encryption"
+  enable_key_rotation     = true
+  deletion_window_in_days = 10
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "tfstate_key" {
+  bucket = aws_s3_bucket.tfstate.id
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.tfstate_key.arn
+      sse_algorithm     = "aws:kms"
+    }
+    bucket_key_enabled = true
+  }
+}

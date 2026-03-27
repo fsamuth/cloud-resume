@@ -19,11 +19,11 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
     }
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
         "repo:fsamuth/cloud-resume:ref:refs/heads/main",
-        "repo:fsamuth/cloud-resume:ref:refs/pull/*"
+        "repo:fsamuth/cloud-resume:pull_request"
       ]
     }
   }

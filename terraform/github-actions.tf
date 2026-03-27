@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:fsamuth/cloud-resume:refs/heads/main"]
+      values   = ["repo:fsamuth/cloud-resume:ref:refs/heads/main"]
     }
   }
 

@@ -169,4 +169,16 @@ data "aws_iam_policy_document" "github_actions_policy" {
     resources = [aws_dynamodb_table.tfstate_lock.arn]
   }
 
+  statement {
+    sid    = "KMSRead"
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt",
+      "kms:Encrypt",
+      "kms:GenerateDataKey",
+      "kms:DescribeKey"
+    ]
+    resources = [aws_kms_key.tfstate_key.arn]
+  }
+
 }

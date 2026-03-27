@@ -2,6 +2,13 @@ resource "aws_s3_bucket" "resume" {
   bucket = var.project_name
 }
 
+resource "aws_s3_bucket_versioning" "resume" {
+  bucket = aws_s3_bucket.resume.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "resume" {
   bucket = aws_s3_bucket.resume.id
 

@@ -40,7 +40,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "s3:PutObject",
-      "s3:DeleteObject"
+      "s3:DeleteObject",
+      "s3:PutBucketVersioning"
     ]
     resources = [
       "${aws_s3_bucket.resume.arn}/*",

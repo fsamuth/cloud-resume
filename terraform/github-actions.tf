@@ -65,10 +65,11 @@ data "aws_iam_policy_document" "github_actions_policy" {
   }
 
   statement {
-    sid    = "CloudFrontInvalidation"
+    sid    = "CloudFrontWrite"
     effect = "Allow"
     actions = [
-      "cloudfront:CreateInvalidation"
+      "cloudfront:CreateInvalidation",
+      "cloudfront:UpdateDistribution"
     ]
     resources = [
       aws_cloudfront_distribution.resume.arn

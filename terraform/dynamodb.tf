@@ -7,4 +7,9 @@ resource "aws_dynamodb_table" "visitor_counter" {
     name = "id"
     type = "S"
   }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
 }

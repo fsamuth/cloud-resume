@@ -27,6 +27,11 @@ resource "aws_dynamodb_table" "tfstate_lock" {
     name = "LockID"
     type = "S"
   }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
 }
 
 resource "aws_kms_key" "tfstate_key" {

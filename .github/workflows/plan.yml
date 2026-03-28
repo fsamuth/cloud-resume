@@ -16,7 +16,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      - name: Run tests
+        run: |
+          pip install uv
+          uv pip install -r requirements.txt --system
+          cd website && python -m pytest tests/ -v
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

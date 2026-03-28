@@ -228,7 +228,11 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "lambda:GetFunction",
       "lambda:GetPolicy",
-      "lambda:ListVersionsByFunction"
+      "lambda:ListVersionsByFunction",
+      "lambda:GetFunctionCodeSigningConfig",
+      "lambda:GetRuntimeManagementConfig",
+      "lambda:GetFunctionConfiguration",
+      "lambda:ListFunctionEventInvokeConfigs"
     ]
     resources = [aws_lambda_function.visitor_counter.arn]
   }

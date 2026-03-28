@@ -19,6 +19,17 @@ resource "aws_apigatewayv2_stage" "visitor_counter" {
   api_id      = aws_apigatewayv2_api.visitor_counter.id
   name        = "$default"
   auto_deploy = true
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway.arn
+    format = jsonencode({
+      requestId        = "$context.requestId"
+      sourceIp         = "$context.identity.sourceIp"
+      routeKey         = "$context.routeKey"
+      status           = "$context.status"
+      responseLength   = "$context.responseLength"
+      integrationError = "$context.integrationErrorMessage"
+    })
+  }
 }
 
 resource "aws_lambda_permission" "visitor_counter" {

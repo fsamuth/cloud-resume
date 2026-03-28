@@ -59,6 +59,15 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    sid       = "SQS"
+    effect    = "Allow"
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.lambda_dlq.arn]
+  }
+
+
 }
 
 resource "aws_lambda_function" "visitor_counter" {
@@ -76,4 +85,9 @@ resource "aws_lambda_function" "visitor_counter" {
   tracing_config {
     mode = "Active"
   }
+
+  dead_letter_config {
+    target_arn = aws_sqs_queue.lambda_dlq.arn
+  }
+
 }

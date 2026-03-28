@@ -21,20 +21,6 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
-resource "aws_lambda_function" "visitor_counter" {
-  function_name    = "visitor-counter"
-  role             = aws_iam_role.lambda.arn
-  filename         = data.archive_file.counter.output_path
-  source_code_hash = data.archive_file.counter.output_base64sha256
-  runtime          = "python3.13"
-  handler          = "counter.handler"
-  environment {
-    variables = {
-      TABLE_NAME = aws_dynamodb_table.visitor_counter.name
-    }
-  }
-}
-
 resource "aws_iam_role_policy" "lambda_visitor_counter_policy" {
   name   = "lambda-visitor-counter-policy"
   role   = aws_iam_role.lambda.id
@@ -53,7 +39,7 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
     resources = [aws_dynamodb_table.visitor_counter.arn]
   }
   statement {
-    sid    = "Lambda"
+    sid    = "CloudWatchLogs"
     effect = "Allow"
     actions = [
       "logs:CreateLogGroup",
@@ -63,5 +49,19 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
     resources = [
       "arn:aws:logs:*:*:*"
     ]
+  }
+}
+
+resource "aws_lambda_function" "visitor_counter" {
+  function_name    = "visitor-counter"
+  role             = aws_iam_role.lambda.arn
+  filename         = data.archive_file.counter.output_path
+  source_code_hash = data.archive_file.counter.output_base64sha256
+  runtime          = "python3.13"
+  handler          = "counter.handler"
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.visitor_counter.name
+    }
   }
 }

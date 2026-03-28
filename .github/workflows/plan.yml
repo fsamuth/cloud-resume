@@ -19,9 +19,9 @@ jobs:
 
       - name: Run tests
         run: |
-          pip install uv
-          uv pip install -r requirements.txt --system
-          cd website && python -m pytest tests/ -v
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+          cd website && ../.venv/bin/python -m pytest tests/ -v
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

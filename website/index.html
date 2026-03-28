@@ -392,9 +392,14 @@
 
     <footer>
       <div>Lyon, France · <span class="available">Disponible</span><span class="cursor"></span></div>
-      <div>fidele@samuth.com</div>
+      <div>fidele@samuth.com · <span id="visitor-count">—</span> vues</div>
     </footer>
 
   </div>
+<script>
+  fetch("https://v82fyqzzw5.execute-api.eu-west-3.amazonaws.com/count")
+    .then(r => r.json())
+    .then(data => document.getElementById("visitor-count").innerText = data.views);
+</script>
 </body>
 </html>

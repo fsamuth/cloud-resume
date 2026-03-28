@@ -50,6 +50,15 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
       "arn:aws:logs:*:*:*"
     ]
   }
+  statement {
+    sid    = "XRay"
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_lambda_function" "visitor_counter" {
@@ -63,5 +72,8 @@ resource "aws_lambda_function" "visitor_counter" {
     variables = {
       TABLE_NAME = aws_dynamodb_table.visitor_counter.name
     }
+  }
+  tracing_config {
+    mode = "Active"
   }
 }

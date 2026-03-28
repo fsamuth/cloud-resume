@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "${var.project_name}-tfstate"
+    bucket         = "fsamuth-resume-tfstate"
     key            = "resume/terraform.tfstate"
     region         = "eu-west-3"
-    dynamodb_table = "${var.project_name}-tfstate-lock"
+    dynamodb_table = "fsamuth-resume-tfstate-lock"
     encrypt        = true
   }
 }

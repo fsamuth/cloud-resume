@@ -1,7 +1,3 @@
-output "acm_validation_cname" {
-  value = aws_acm_certificate.cert.domain_validation_options
-}
-
 output "github_actions_role_arn" {
   value = aws_iam_role.github_actions.arn
 }
@@ -15,5 +11,5 @@ output "cloudfront_distribution_id" {
 }
 
 output "api_gateway_url" {
-  value = aws_apigatewayv2_stage.resume_api_gateway.invoke_url
+  value = aws_apigatewayv2_stage.visitor_counter.invoke_url
 }

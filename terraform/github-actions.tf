@@ -137,7 +137,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "acm:DescribeCertificate",
       "acm:ListTagsForCertificate"
     ]
-    resources = [aws_acm_certificate.cert.arn]
+    resources = [aws_acm_certificate.resume.arn]
   }
 
   statement {

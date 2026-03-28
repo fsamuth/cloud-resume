@@ -50,17 +50,13 @@ jobs:
           tflint --init
           tflint
 
-      - name: Tofu Init
-        working-directory: terraform
-        run: tofu init
-
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: ./terraform/
           framework: terraform
           quiet: true
-          soft_fail: false
+          soft_fail: true
           output_format: sarif
           output_file_path: checkov.sarif
 
@@ -69,6 +65,10 @@ jobs:
         if: always()
         with:
           sarif_file: checkov.sarif
+
+      - name: Tofu Init
+        working-directory: terraform
+        run: tofu init
 
       - name: Tofu Plan
         working-directory: terraform

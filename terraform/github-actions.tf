@@ -21,7 +21,10 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [var.repo_ref]
+      values = [
+        "repo:fsamuth/cloud-resume:ref:refs/heads/main",
+        "repo:fsamuth/cloud-resume:pull_request"
+      ]
     }
   }
 
@@ -187,5 +190,4 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = [aws_kms_key.tfstate_key.arn]
   }
-
 }

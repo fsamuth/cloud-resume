@@ -54,6 +54,22 @@ jobs:
         working-directory: terraform
         run: tofu init
 
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ./terraform/
+          framework: terraform
+          quiet: true
+          soft_fail: false
+          output_format: sarif
+          output_file_path: checkov.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov.sarif
+
       - name: Tofu Plan
         working-directory: terraform
         run: tofu plan -out=tfplan

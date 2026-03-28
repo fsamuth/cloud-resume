@@ -12,6 +12,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
+      checks: write
 
     steps:
       - name: Checkout code
@@ -21,7 +22,15 @@ jobs:
         run: |
           python -m venv .venv
           .venv/bin/pip install -r requirements.txt
-          cd website && ../.venv/bin/python -m pytest tests/ -v
+          cd website && ../.venv/bin/python -m pytest tests/ -v --junitxml=../pytest-report.xml
+
+      - name: Test report
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: pytest
+          path: pytest-report.xml
+          reporter: java-junit
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

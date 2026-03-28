@@ -152,7 +152,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = [
       aws_iam_role.github_actions.arn,
-      aws_iam_openid_connect_provider.github_actions.arn
+      aws_iam_openid_connect_provider.github_actions.arn,
+      aws_iam_role.lambda.arn
     ]
   }
 
@@ -166,7 +167,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "dynamodb:DescribeTimeToLive",
       "dynamodb:ListTagsOfResource"
     ]
-    resources = [aws_dynamodb_table.tfstate_lock.arn]
+    resources = [
+      aws_dynamodb_table.tfstate_lock.arn,
+      aws_dynamodb_table.visitor_counter.arn
+    ]
   }
 
   statement {
@@ -191,4 +195,69 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = [aws_kms_key.tfstate_key.arn]
   }
+
+  statement {
+    sid    = "DynamoDBVisitorWrite"
+    effect = "Allow"
+    actions = [
+      "dynamodb:CreateTable",
+      "dynamodb:DeleteTable",
+      "dynamodb:UpdateTable"
+    ]
+    resources = [aws_dynamodb_table.visitor_counter.arn]
+  }
+
+  statement {
+    sid    = "LambdaWrite"
+    effect = "Allow"
+    actions = [
+      "lambda:CreateFunction",
+      "lambda:UpdateFunctionCode",
+      "lambda:UpdateFunctionConfiguration",
+      "lambda:DeleteFunction",
+      "lambda:AddPermission",
+      "lambda:RemovePermission"
+    ]
+    resources = [aws_lambda_function.visitor_counter.arn]
+  }
+
+
+  statement {
+    sid    = "LambdaRead"
+    effect = "Allow"
+    actions = [
+      "lambda:GetFunction",
+      "lambda:GetPolicy",
+      "lambda:ListVersionsByFunction"
+    ]
+    resources = [aws_lambda_function.visitor_counter.arn]
+  }
+
+  statement {
+    sid    = "APIGatewayWrite"
+    effect = "Allow"
+    actions = [
+      "execute-api:*",
+      "apigateway:GET",
+      "apigateway:POST",
+      "apigateway:PUT",
+      "apigateway:PATCH",
+      "apigateway:DELETE"
+    ]
+    resources = ["arn:aws:apigateway:*::/*"]
+  }
+
+  statement {
+    sid    = "IAMLambdaWrite"
+    effect = "Allow"
+    actions = [
+      "iam:CreateRole",
+      "iam:DeleteRole",
+      "iam:PutRolePolicy",
+      "iam:DeleteRolePolicy",
+      "iam:PassRole"
+    ]
+    resources = [aws_iam_role.lambda.arn]
+  }
+
 }

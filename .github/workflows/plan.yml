@@ -73,6 +73,7 @@ jobs:
       - name: Tofu Plan
         working-directory: terraform
         env:
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
         run: tofu plan -out=tfplan

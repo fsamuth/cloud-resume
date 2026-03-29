@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
       "logs:PutLogEvents"
     ]
     resources = [
-      "arn:aws:logs:*:*:*"
+      "arn:aws:logs:${var.aws_region}:*:log-group:/aws/lambda/visitor-counter:*"
     ]
   }
   statement {

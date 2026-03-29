@@ -40,6 +40,8 @@ jobs:
 
       - name: Sync website to S3
         run: |
+          API_URL=$(cd terraform && tofu output -raw api_gateway_url)
+          sed -i "s|__API_URL__|$API_URL|g" website/index.html
           BUCKET=$(cd terraform && tofu output -raw s3_bucket_name)
           aws s3 sync website/ s3://$BUCKET/ --delete
 

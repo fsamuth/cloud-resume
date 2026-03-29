@@ -266,10 +266,7 @@
       </div>
       <div class="contact">
         <div><a href="mailto:fidele@samuth.com">fidele@samuth.com</a></div>
-        <div>06 87 05 45 51</div>
         <div>Lyon, France</div>
-        <div>Permis B</div>
-        <div>TOEIC 990/990</div>
       </div>
     </header>
 
@@ -294,7 +291,7 @@
           <div class="tags">
             <span class="tag">GitLab CI</span>
             <span class="tag">GitHub Actions</span>
-            <span class="tag">Terraform</span>
+            <span class="tag">Terraform/OpenTofu</span>
             <span class="tag">Ansible</span>
             <span class="tag">Bitrise</span>
           </div>
@@ -327,6 +324,22 @@
             <span class="tag">DHCP</span>
             <span class="tag">VPN</span>
             <span class="tag">Firewall</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Cloud AWS</div>
+          <div class="tags">
+            <span class="tag">S3</span>
+            <span class="tag">CloudFront</span>
+            <span class="tag">Lambda</span>
+            <span class="tag">API Gateway</span>
+            <span class="tag">DynamoDB</span>
+            <span class="tag">ACM</span>
+            <span class="tag">IAM</span>
+            <span class="tag">KMS</span>
+            <span class="tag">CloudWatch</span>
+            <span class="tag">SQS</span>
+            <span class="tag">SNS</span>
           </div>
         </div>
       </div>
@@ -380,6 +393,38 @@
       </div>
     </section>
 
+    <!-- PROJECTS -->
+    <section class="section">
+      <div class="section-label">Projets personnels</div>
+
+      <div class="job">
+        <div class="job-header">
+          <div class="job-company">Site CV Cloud</div>
+          <div class="job-date">2026</div>
+        </div>
+        <div class="job-title">AWS · OpenTofu · GitHub Actions</div>
+
+        <div class="job-category">Infrastructure</div>
+        <ul class="job-items">
+          <li>Hébergement statique sur S3 avec distribution CloudFront, certificat ACM et domaine personnalisé</li>
+          <li>Infrastructure as Code avec OpenTofu, state distant sur S3 avec verrouillage DynamoDB</li>
+          <li>Sécurité : OAC, headers de sécurité, restriction géographique, chiffrement KMS</li>
+        </ul>
+
+        <div class="job-category">Backend</div>
+        <ul class="job-items">
+          <li>Compteur de visites serverless : API Gateway HTTP + Lambda Python + DynamoDB</li>
+          <li>Traçage distribué avec AWS X-Ray, Dead Letter Queue SQS pour la résilience</li>
+        </ul>
+
+        <div class="job-category">CI/CD & Qualité</div>
+        <ul class="job-items">
+          <li>Pipeline GitHub Actions : tests pytest, tflint, checkov</li>
+          <li>Alertes CloudWatch sur erreurs Lambda et API Gateway via SNS</li>
+        </ul>
+      </div>
+    </section>
+
     <!-- EDUCATION -->
     <section class="section">
       <div class="section-label">Formation</div>
@@ -397,7 +442,7 @@
 
   </div>
 <script>
-  fetch("https://v82fyqzzw5.execute-api.eu-west-3.amazonaws.com/count")
+  fetch("__API_URL__/count")
     .then(r => r.json())
     .then(data => document.getElementById("visitor-count").innerText = data.views);
 </script>

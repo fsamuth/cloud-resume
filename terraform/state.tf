@@ -1,4 +1,8 @@
 resource "aws_s3_bucket" "tfstate" {
+  #checkov:skip=CKV_AWS_18:Internal infrastructure bucket, no compliance requirement
+  #checkov:skip=CKV_AWS_144:Cross-region replication is overkill for a personal project
+  #checkov:skip=CKV2_AWS_62:S3 event notifications not needed for a state bucket
+  #checkov:skip=CKV2_AWS_61:State file versions should be retained, not expired
   bucket = "${var.project_name}-tfstate"
 }
 
@@ -19,6 +23,7 @@ resource "aws_s3_bucket_versioning" "tfstate" {
 }
 
 resource "aws_dynamodb_table" "tfstate_lock" {
+  #checkov:skip=CKV_AWS_119:Default DynamoDB encryption is sufficient, CMK adds cost
   name         = "${var.project_name}-tfstate-lock"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"

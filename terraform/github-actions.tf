@@ -31,6 +31,8 @@ resource "aws_iam_role" "github_actions" {
 }
 
 data "aws_iam_policy_document" "github_actions_policy" {
+  #checkov:skip=CKV_AWS_111:Some AWS actions (CloudFront invalidations, ACM list) inherently require * as resource
+  #checkov:skip=CKV_AWS_356:Some AWS actions (CloudFront invalidations, ACM list) inherently require * as resource
   statement {
     sid    = "S3Write"
     effect = "Allow"

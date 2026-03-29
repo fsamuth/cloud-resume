@@ -10,6 +10,7 @@ resource "aws_apigatewayv2_integration" "visitor_counter" {
 }
 
 resource "aws_apigatewayv2_route" "resume_visitor_count" {
+  #checkov:skip=CKV_AWS_309:Visitor counter is a public endpoint, no authentication required
   api_id    = aws_apigatewayv2_api.visitor_counter.id
   route_key = "GET /count"
   target    = "integrations/${aws_apigatewayv2_integration.visitor_counter.id}"

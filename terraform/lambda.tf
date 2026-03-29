@@ -71,6 +71,10 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
 }
 
 resource "aws_lambda_function" "visitor_counter" {
+  #checkov:skip=CKV_AWS_117:Lambda does not need VPC, DynamoDB is a managed service
+  #checkov:skip=CKV_AWS_272:Code signing not required for a personal project
+  #checkov:skip=CKV_AWS_115:No concurrency risk on a low-traffic personal site
+  #checkov:skip=CKV_AWS_173:TABLE_NAME environment variable is not sensitive data
   function_name    = "visitor-counter"
   role             = aws_iam_role.lambda.arn
   filename         = data.archive_file.counter.output_path

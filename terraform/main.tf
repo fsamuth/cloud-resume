@@ -1,4 +1,9 @@
 resource "aws_s3_bucket" "resume" {
+  #checkov:skip=CKV_AWS_18:Resume bucket access is already tracked via CloudFront access logs
+  #checkov:skip=CKV_AWS_144:Cross-region replication is overkill for a personal site
+  #checkov:skip=CKV_AWS_145:SSE-S3 is sufficient for a public static site
+  #checkov:skip=CKV2_AWS_62:S3 event notifications not needed for a static site
+  #checkov:skip=CKV2_AWS_61:No object cleanup needed for a static site with few files
   bucket = var.project_name
 }
 
@@ -60,6 +65,9 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
 }
 
 resource "aws_cloudfront_distribution" "resume" {
+  #checkov:skip=CKV_AWS_68:WAF costs ~$5/month minimum, not justified for a personal site
+  #checkov:skip=CKV2_AWS_47:WAF not configured, Log4j AMR rule not applicable
+  #checkov:skip=CKV_AWS_310:Origin failover is overkill for a single S3 static site
   aliases             = [var.domain_name]
   enabled             = true
   default_root_object = "index.html"

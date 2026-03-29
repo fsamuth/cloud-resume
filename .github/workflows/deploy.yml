@@ -50,4 +50,4 @@ jobs:
           DIST_ID=$(cd terraform && tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
             --distribution-id $DIST_ID \
-            --invalidation-batch '{"Paths":{"Quantity":1,"Items":["/*"]},"CallerReference":"github-actions"}'
+            --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"

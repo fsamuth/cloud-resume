@@ -304,6 +304,49 @@ data "aws_iam_policy_document" "github_actions_policy" {
   }
 
   statement {
+    sid    = "SNSRead"
+    effect = "Allow"
+    actions = [
+      "sns:GetTopicAttributes",
+      "sns:ListTagsForResource",
+      "sns:GetSubscriptionAttributes"
+    ]
+    resources = [aws_sns_topic.alerts.arn]
+  }
+
+  statement {
+    sid    = "SNSWrite"
+    effect = "Allow"
+    actions = [
+      "sns:CreateTopic",
+      "sns:DeleteTopic",
+      "sns:Subscribe",
+      "sns:Unsubscribe"
+    ]
+    resources = [aws_sns_topic.alerts.arn]
+  }
+
+  statement {
+    sid    = "CloudWatchAlarmsRead"
+    effect = "Allow"
+    actions = [
+      "cloudwatch:DescribeAlarms",
+      "cloudwatch:ListTagsForResource"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "CloudWatchAlarmsWrite"
+    effect = "Allow"
+    actions = [
+      "cloudwatch:PutMetricAlarm",
+      "cloudwatch:DeleteAlarms"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     sid    = "APIGatewayWrite"
     effect = "Allow"
     actions = [

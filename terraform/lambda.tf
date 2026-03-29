@@ -50,9 +50,31 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
       "arn:aws:logs:*:*:*"
     ]
   }
+  statement {
+    sid    = "XRay"
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "SQS"
+    effect    = "Allow"
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.lambda_dlq.arn]
+  }
+
+
 }
 
 resource "aws_lambda_function" "visitor_counter" {
+  #checkov:skip=CKV_AWS_117:Lambda does not need VPC, DynamoDB is a managed service
+  #checkov:skip=CKV_AWS_272:Code signing not required for a personal project
+  #checkov:skip=CKV_AWS_115:No concurrency risk on a low-traffic personal site
+  #checkov:skip=CKV_AWS_173:TABLE_NAME environment variable is not sensitive data
   function_name    = "visitor-counter"
   role             = aws_iam_role.lambda.arn
   filename         = data.archive_file.counter.output_path
@@ -64,4 +86,12 @@ resource "aws_lambda_function" "visitor_counter" {
       TABLE_NAME = aws_dynamodb_table.visitor_counter.name
     }
   }
+  tracing_config {
+    mode = "Active"
+  }
+
+  dead_letter_config {
+    target_arn = aws_sqs_queue.lambda_dlq.arn
+  }
+
 }

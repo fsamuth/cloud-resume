@@ -1,4 +1,9 @@
 resource "aws_s3_bucket" "resume" {
+  #checkov:skip=CKV_AWS_18:Resume bucket access is already tracked via CloudFront access logs
+  #checkov:skip=CKV_AWS_144:Cross-region replication is overkill for a personal site
+  #checkov:skip=CKV_AWS_145:SSE-S3 is sufficient for a public static site
+  #checkov:skip=CKV2_AWS_62:S3 event notifications not needed for a static site
+  #checkov:skip=CKV2_AWS_61:No object cleanup needed for a static site with few files
   bucket = var.project_name
 }
 
@@ -34,7 +39,35 @@ resource "aws_cloudfront_origin_access_control" "resume" {
   signing_behavior                  = "always"
 }
 
+resource "aws_cloudfront_response_headers_policy" "security_headers" {
+  name = "${var.project_name}-security-headers"
+
+  security_headers_config {
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      override                   = true
+      preload                    = true
+    }
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    xss_protection {
+      mode_block = true
+      protection = true
+      override   = true
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "resume" {
+  #checkov:skip=CKV_AWS_68:WAF costs ~$5/month minimum, not justified for a personal site
+  #checkov:skip=CKV2_AWS_47:WAF not configured, Log4j AMR rule not applicable
+  #checkov:skip=CKV_AWS_310:Origin failover is overkill for a single S3 static site
   aliases             = [var.domain_name]
   enabled             = true
   default_root_object = "index.html"
@@ -47,7 +80,8 @@ resource "aws_cloudfront_distribution" "resume" {
   }
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "whitelist"
+      locations        = ["FR"]
     }
   }
   viewer_certificate {
@@ -56,11 +90,13 @@ resource "aws_cloudfront_distribution" "resume" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
   default_cache_behavior {
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "s3-resume"
-    viewer_protocol_policy = "redirect-to-https"
-    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    target_origin_id           = "s3-resume"
+    viewer_protocol_policy     = "redirect-to-https"
+    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers.id
+
   }
 
   custom_error_response {
@@ -73,6 +109,10 @@ resource "aws_cloudfront_distribution" "resume" {
     error_code         = 404
     response_code      = 200
     response_page_path = "/index.html"
+  }
+
+  logging_config {
+    bucket = aws_s3_bucket.cloudfront_logs.bucket_domain_name
   }
 
 }

@@ -39,11 +39,16 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "s3:PutObject",
       "s3:DeleteObject",
-      "s3:PutBucketVersioning"
+      "s3:PutBucketVersioning",
+      "s3:PutBucketOwnershipControls",
+      "s3:PutBucketPublicAccessBlock",
+      "s3:PutLifecycleConfiguration"
     ]
     resources = [
       "${aws_s3_bucket.resume.arn}/*",
-      "${aws_s3_bucket.tfstate.arn}/*"
+      "${aws_s3_bucket.tfstate.arn}/*",
+      aws_s3_bucket.cloudfront_logs.arn,
+      "${aws_s3_bucket.cloudfront_logs.arn}/*"
     ]
   }
 
@@ -67,13 +72,16 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetBucketObjectLockConfiguration",
       "s3:GetBucketPublicAccessBlock",
       "s3:GetBucketTagging",
-      "s3:GetObjectTagging"
+      "s3:GetObjectTagging",
+      "s3:GetBucketOwnershipControls"
     ]
     resources = [
       aws_s3_bucket.resume.arn,
       aws_s3_bucket.tfstate.arn,
+      aws_s3_bucket.cloudfront_logs.arn,
       "${aws_s3_bucket.resume.arn}/*",
-      "${aws_s3_bucket.tfstate.arn}/*"
+      "${aws_s3_bucket.tfstate.arn}/*",
+      "${aws_s3_bucket.cloudfront_logs.arn}/*"
     ]
   }
 
@@ -121,10 +129,14 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "cloudfront:CreateInvalidation",
-      "cloudfront:UpdateDistribution"
+      "cloudfront:UpdateDistribution",
+      "cloudfront:CreateResponseHeadersPolicy",
+      "cloudfront:UpdateResponseHeadersPolicy",
+      "cloudfront:DeleteResponseHeadersPolicy"
     ]
     resources = [
-      aws_cloudfront_distribution.resume.arn
+      aws_cloudfront_distribution.resume.arn,
+      aws_cloudfront_response_headers_policy.security_headers.arn
     ]
   }
 
@@ -134,11 +146,13 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "cloudfront:GetDistribution",
       "cloudfront:GetOriginAccessControl",
+      "cloudfront:GetResponseHeadersPolicy",
       "cloudfront:ListTagsForResource"
     ]
     resources = [
       aws_cloudfront_distribution.resume.arn,
-      aws_cloudfront_origin_access_control.resume.arn
+      aws_cloudfront_origin_access_control.resume.arn,
+      aws_cloudfront_response_headers_policy.security_headers.arn
     ]
   }
 
@@ -242,6 +256,51 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "lambda:ListFunctionEventInvokeConfigs"
     ]
     resources = [aws_lambda_function.visitor_counter.arn]
+  }
+
+  statement {
+    sid    = "CloudWatchLogsRead"
+    effect = "Allow"
+    actions = [
+      "logs:DescribeLogGroups",
+      "logs:ListTagsLogGroup",
+      "logs:ListTagsForResource"
+    ]
+    resources = ["arn:aws:logs:eu-west-3:*:log-group:*"]
+  }
+
+  statement {
+    sid    = "CloudWatchLogsWrite"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:DeleteLogGroup",
+      "logs:PutRetentionPolicy"
+    ]
+    resources = [aws_cloudwatch_log_group.api_gateway.arn]
+  }
+
+  statement {
+    sid    = "SQSRead"
+    effect = "Allow"
+    actions = [
+      "sqs:GetQueueAttributes",
+      "sqs:GetQueueUrl",
+      "sqs:ListQueueTags"
+    ]
+    resources = [aws_sqs_queue.lambda_dlq.arn]
+  }
+
+  statement {
+    sid    = "SQSWrite"
+    effect = "Allow"
+    actions = [
+      "sqs:CreateQueue",
+      "sqs:DeleteQueue",
+      "sqs:SetQueueAttributes",
+      "sqs:TagQueue"
+    ]
+    resources = [aws_sqs_queue.lambda_dlq.arn]
   }
 
   statement {

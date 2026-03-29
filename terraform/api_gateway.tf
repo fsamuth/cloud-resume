@@ -30,6 +30,11 @@ resource "aws_apigatewayv2_stage" "visitor_counter" {
       integrationError = "$context.integrationErrorMessage"
     })
   }
+  default_route_settings {
+    throttling_rate_limit  = 100 # requests per second
+    throttling_burst_limit = 50  # max concurrent requests
+  }
+
 }
 
 resource "aws_lambda_permission" "visitor_counter" {

@@ -28,3 +28,12 @@ def test_first_visit_returns_one(dynamodb_table):
         assert response["statusCode"] == 200
         body = json.loads(response["body"])
         assert body["views"] == 1
+
+def test_second_visit_increments(dynamodb_table):
+    with mock_aws():
+        from counter import handler
+        handler({}, {})
+        response = handler({}, {})
+        assert response["statusCode"] == 200
+        body = json.loads(response["body"])
+        assert body["views"] == 2

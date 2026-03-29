@@ -351,7 +351,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "budgets:ViewBudget",
-      "budgets:DescribeBudgetActionsForBudget"
+      "budgets:DescribeBudgets",
+      "budgets:DescribeBudgetActionsForBudget",
+      "budgets:DescribeBudgetNotificationsForAccount",
+      "budgets:ListTagsForResource"
     ]
     resources = ["arn:aws:budgets::${data.aws_caller_identity.current.account_id}:budget/${var.project_name}-monthly-budget"]
   }

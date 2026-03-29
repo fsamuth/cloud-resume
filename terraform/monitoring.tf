@@ -1,4 +1,5 @@
 resource "aws_sns_topic" "alerts" {
+  #checkov:skip=CKV_AWS_26:Topic only carries CloudWatch alarm notifications, not sensitive data
   name = "${var.project_name}-alerts"
 }
 

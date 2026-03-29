@@ -347,6 +347,27 @@ data "aws_iam_policy_document" "github_actions_policy" {
   }
 
   statement {
+    sid    = "BudgetsRead"
+    effect = "Allow"
+    actions = [
+      "budgets:ViewBudget",
+      "budgets:DescribeBudgetActionsForBudget"
+    ]
+    resources = ["arn:aws:budgets::${data.aws_caller_identity.current.account_id}:budget/${var.project_name}-monthly-budget"]
+  }
+
+  statement {
+    sid    = "BudgetsWrite"
+    effect = "Allow"
+    actions = [
+      "budgets:CreateBudget",
+      "budgets:ModifyBudget",
+      "budgets:DeleteBudget"
+    ]
+    resources = ["arn:aws:budgets::${data.aws_caller_identity.current.account_id}:budget/${var.project_name}-monthly-budget"]
+  }
+
+  statement {
     sid    = "APIGatewayWrite"
     effect = "Allow"
     actions = [

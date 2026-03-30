@@ -1,450 +1,694 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fidèle Samuth — DevOps & SRE Engineer</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fidèle SAMUTH – Ingénieur DevOps & SRE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg: #0d0d0d;
-      --surface: #141414;
-      --border: #222;
-      --accent: #e8ff47;
-      --accent2: #47ffe8;
-      --text: #e8e8e8;
-      --muted: #666;
-      --tag-bg: #1a1a1a;
+      --bg: #0f0f1a;
+      --bg2: #16162a;
+      --accent: #6c63ff;
+      --accent2: #a0c4ff;
+      --text: #e0e0f0;
+      --muted: #888aaa;
+      --card: #1c1c32;
+      --border: #2a2a4a;
+      --radius: 12px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    html { scroll-behavior: smooth; }
+
     body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh;
-      padding: 3rem 1.5rem;
+      font-size: 15px;
+      line-height: 1.6;
     }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    /* HEADER */
-    header {
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(15, 15, 26, 0.85);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      padding-bottom: 2.5rem;
-      margin-bottom: 3rem;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 2rem;
-      align-items: end;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 58px;
     }
 
-    .name {
-      font-family: 'Syne', sans-serif;
+    nav .logo {
       font-weight: 800;
-      font-size: clamp(2.5rem, 7vw, 5rem);
-      line-height: 0.95;
-      letter-spacing: -0.03em;
+      font-size: 17px;
+      letter-spacing: -0.3px;
+      color: #fff;
     }
 
-    .name span { color: var(--accent); }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 28px;
+    }
 
-    .title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
-      font-weight: 400;
+    nav ul a {
       color: var(--muted);
-      margin-top: 0.75rem;
-      letter-spacing: 0.15em;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav ul a:hover { color: #fff; text-decoration: none; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 30%, rgba(108,99,255,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 70%, rgba(160,196,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-inner { position: relative; max-width: 720px; }
+
+    .hero .badge {
+      display: inline-block;
+      background: rgba(108,99,255,0.15);
+      border: 1px solid rgba(108,99,255,0.35);
+      color: var(--accent2);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 24px;
     }
 
-    .contact {
-      text-align: right;
-      font-size: 0.78rem;
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero .subtitle {
+      font-size: 18px;
       color: var(--muted);
-      line-height: 2;
+      margin-bottom: 36px;
+      font-style: italic;
     }
 
-    .contact a { color: var(--accent2); text-decoration: none; }
-    .contact a:hover { text-decoration: underline; }
+    .hero-contacts {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
 
-    /* SECTIONS */
-    .section {
-      margin-bottom: 3rem;
+    .contact-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 7px 16px;
+      border-radius: 24px;
+      font-size: 13.5px;
+      color: var(--text);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .contact-chip:hover {
+      border-color: var(--accent);
+      background: rgba(108,99,255,0.1);
+      text-decoration: none;
+    }
+
+    .contact-chip .ci { font-size: 15px; }
+
+    .scroll-hint {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 80px 24px;
     }
 
     .section-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.25em;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      margin-bottom: 8px;
     }
 
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
+    .section-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 40px;
+      letter-spacing: -0.5px;
     }
 
-    /* SKILLS */
+    /* ── SKILLS ── */
     .skills-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
     }
 
-    .skill-group {
-      background: var(--surface);
+    .skill-card {
+      background: var(--card);
       border: 1px solid var(--border);
-      padding: 1.25rem;
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      transition: border-color 0.2s, transform 0.2s;
     }
 
-    .skill-group-title {
-      font-size: 0.7rem;
-      color: var(--muted);
-      letter-spacing: 0.15em;
+    .skill-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    .skill-card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 10px;
       text-transform: uppercase;
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.8px;
     }
 
     .tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
+      gap: 6px;
     }
 
     .tag {
-      background: var(--tag-bg);
-      border: 1px solid var(--border);
-      padding: 0.25rem 0.6rem;
-      font-size: 0.72rem;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.25);
       color: var(--text);
-      transition: border-color 0.2s, color 0.2s;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 500;
     }
 
-    .tag:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* EXPERIENCE */
-    .job {
-      border-left: 1px solid var(--border);
-      padding-left: 1.5rem;
-      margin-bottom: 2.5rem;
+    /* ── TIMELINE (experience / education) ── */
+    .timeline {
       position: relative;
+      padding-left: 28px;
     }
 
-    .job::before {
+    .timeline::before {
       content: '';
-      width: 7px;
-      height: 7px;
-      background: var(--accent);
       position: absolute;
-      left: -4px;
-      top: 6px;
+      left: 6px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
     }
 
-    .job-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .job-company {
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      font-size: 1.05rem;
-    }
-
-    .job-date {
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-
-    .job-title {
-      font-size: 0.78rem;
-      color: var(--accent2);
-      margin-bottom: 1rem;
-      letter-spacing: 0.05em;
-    }
-
-    .job-category {
-      font-size: 0.7rem;
-      color: var(--accent);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin: 1rem 0 0.4rem;
-    }
-
-    .job-items {
-      list-style: none;
-      font-size: 0.8rem;
-      color: #b0b0b0;
-      line-height: 1.7;
-    }
-
-    .job-items li {
-      padding-left: 1rem;
+    .tl-item {
       position: relative;
-      margin-bottom: 0.3rem;
+      margin-bottom: 40px;
     }
 
-    .job-items li::before {
-      content: '—';
+    .tl-item:last-child { margin-bottom: 0; }
+
+    .tl-dot {
+      position: absolute;
+      left: -24px;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.3);
+    }
+
+    .tl-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      transition: border-color 0.2s;
+    }
+
+    .tl-card:hover { border-color: var(--accent); }
+
+    .tl-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .tl-top strong {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .tl-period {
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .tl-role {
+      font-style: italic;
+      color: var(--accent2);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .tl-location {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .tl-card ul { list-style: none; }
+
+    .tl-card > ul > li {
+      margin-bottom: 10px;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .tl-card > ul > li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 11px;
+      top: 3px;
+    }
+
+    .tl-card > ul > li > b {
+      color: #fff;
+    }
+
+    .tl-card > ul > li > ul {
+      margin-top: 6px;
+      list-style: none;
+    }
+
+    .tl-card > ul > li > ul > li {
+      padding-left: 14px;
+      position: relative;
+      margin-bottom: 5px;
+      color: #b0b8d0;
+      font-size: 13.5px;
+    }
+
+    .tl-card > ul > li > ul > li::before {
+      content: '–';
       position: absolute;
       left: 0;
       color: var(--muted);
     }
 
-    /* EDUCATION */
-    .edu {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 1.25rem 1.5rem;
+    .tl-card > ul > li > ul > li b { color: var(--accent2); font-weight: 600; }
+
+    .tl-simple > li {
+      padding-left: 14px;
+      position: relative;
+      margin-bottom: 6px;
+      color: #b0b8d0;
+      font-size: 13.5px;
     }
 
-    .edu-school {
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
+    .tl-simple > li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 11px;
+      top: 3px;
     }
 
-    .edu-degree {
-      font-size: 0.78rem;
-      color: var(--accent2);
-      margin: 0.25rem 0;
-    }
+    .tl-simple > li b { color: var(--accent2); font-weight: 600; }
 
-    .edu-date {
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-
-    /* FOOTER */
+    /* ── FOOTER ── */
     footer {
+      text-align: center;
+      padding: 40px 24px;
       border-top: 1px solid var(--border);
-      padding-top: 1.5rem;
-      font-size: 0.72rem;
       color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+      font-size: 13px;
     }
 
-    .available { color: var(--accent); }
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      max-width: 860px;
+      margin: 0 auto;
+    }
 
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .cursor {
-      display: inline-block;
-      width: 2px;
-      height: 1em;
-      background: var(--accent);
-      vertical-align: middle;
-      margin-left: 2px;
-      animation: blink 1s infinite;
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      nav ul { gap: 16px; }
+      .tl-card { padding: 18px 18px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
 
-    <header>
-      <div>
-        <div class="name">Fidèle<br><span>Samuth</span></div>
-        <div class="title">DevOps &amp; SRE Engineer</div>
+  <!-- NAV -->
+  <nav>
+    <span class="logo"><i class="fa-solid fa-eye"></i> <span id="visitor-count">—</span></span>
+    <ul>
+      <li><a href="#experience">Expérience</a></li>
+      <li><a href="#competences">Compétences</a></li>
+      <li><a href="#projets">Projets</a></li>
+      <li><a href="#formation">Formation</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="badge">Disponible &amp; Ouvert aux opportunités</div>
+      <h1>Fidèle <span>SAMUTH</span></h1>
+      <p class="subtitle">Ingénieur DevOps &amp; SRE · Lyon, France</p>
+      <div class="hero-contacts">
+        <a class="contact-chip" href="mailto:fidele@samuth.com"><i class="fa-solid fa-envelope ci"></i> fidele@samuth.com</a>
+        <span class="contact-chip"><i class="fa-solid fa-location-dot ci"></i> 69003 Lyon, France</span>
       </div>
-      <div class="contact">
-        <div><a href="mailto:fidele@samuth.com">fidele@samuth.com</a></div>
-        <div>Lyon, France</div>
-      </div>
-    </header>
-
-    <!-- SKILLS -->
-    <section class="section">
-      <div class="section-label">Stack technique</div>
-      <div class="skills-grid">
-        <div class="skill-group">
-          <div class="skill-group-title">Conteneurisation & Orchestration</div>
-          <div class="tags">
-            <span class="tag">Docker</span>
-            <span class="tag">Podman</span>
-            <span class="tag">Kubernetes</span>
-            <span class="tag">ArgoCD</span>
-            <span class="tag">Helm</span>
-            <span class="tag">Kustomize</span>
-            <span class="tag">Kaniko</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <div class="skill-group-title">CI/CD & IaC</div>
-          <div class="tags">
-            <span class="tag">GitLab CI</span>
-            <span class="tag">GitHub Actions</span>
-            <span class="tag">Terraform/OpenTofu</span>
-            <span class="tag">Ansible</span>
-            <span class="tag">Bitrise</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <div class="skill-group-title">Observabilité</div>
-          <div class="tags">
-            <span class="tag">Prometheus</span>
-            <span class="tag">Grafana</span>
-            <span class="tag">Loki</span>
-            <span class="tag">Alertmanager</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <div class="skill-group-title">Sécurité & Scripting</div>
-          <div class="tags">
-            <span class="tag">Keycloak</span>
-            <span class="tag">OpenID Connect</span>
-            <span class="tag">SAML</span>
-            <span class="tag">Python</span>
-            <span class="tag">Bash</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <div class="skill-group-title">Systèmes & Réseaux</div>
-          <div class="tags">
-            <span class="tag">Linux</span>
-            <span class="tag">Active Directory</span>
-            <span class="tag">DNS</span>
-            <span class="tag">DHCP</span>
-            <span class="tag">VPN</span>
-            <span class="tag">Firewall</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <div class="skill-group-title">Cloud AWS</div>
-          <div class="tags">
-            <span class="tag">S3</span>
-            <span class="tag">CloudFront</span>
-            <span class="tag">Lambda</span>
-            <span class="tag">API Gateway</span>
-            <span class="tag">DynamoDB</span>
-            <span class="tag">ACM</span>
-            <span class="tag">IAM</span>
-            <span class="tag">KMS</span>
-            <span class="tag">CloudWatch</span>
-            <span class="tag">SQS</span>
-            <span class="tag">SNS</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- EXPERIENCE -->
-    <section class="section">
-      <div class="section-label">Expérience professionnelle</div>
-
-      <div class="job">
-        <div class="job-header">
-          <div class="job-company">Amiltone</div>
-          <div class="job-date">05/2021 — Aujourd'hui · Lyon</div>
-        </div>
-        <div class="job-title">Ingénieur DevOps & SRE</div>
-
-        <div class="job-category">CI/CD & Automatisation</div>
-        <ul class="job-items">
-          <li>Conception et optimisation de pipelines CI/CD (GitLab CI, GitHub Actions, Bitrise)</li>
-          <li>Automatisation via playbooks Ansible, scripts Bash/Python et workflows n8n</li>
-          <li>Provisionnement automatisé : dépôts GitLab, tokens, SonarQube, Grafana dashboards</li>
-        </ul>
-
-        <div class="job-category">Conteneurisation & Orchestration</div>
-        <ul class="job-items">
-          <li>Création et déploiement d'images OCI avec Docker, Kaniko et Podman</li>
-          <li>GitOps avec ArgoCD, Helm et Kustomize sur Kubernetes</li>
-        </ul>
-
-        <div class="job-category">Observabilité & Supervision</div>
-        <ul class="job-items">
-          <li>Stack Prometheus / Grafana / Loki / Alertmanager pour supervision centralisée</li>
-        </ul>
-
-        <div class="job-category">Sécurité & Authentification</div>
-        <ul class="job-items">
-          <li>Déploiement de Keycloak pour la gestion des identités (OIDC, SAML, Entra ID)</li>
-        </ul>
-      </div>
-
-      <div class="job">
-        <div class="job-header">
-          <div class="job-company">Schneider Electric Systems France</div>
-          <div class="job-date">09/2018 — 08/2020 · Dardilly</div>
-        </div>
-        <div class="job-title">Expert Services — Alternance</div>
-        <ul class="job-items">
-          <li>Configuration de VMs Hyper-V pour EcoStruxure Foxboro DCS</li>
-          <li>Configuration Active Directory pour EcoStruxure Foxboro DCS</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- PROJECTS -->
-    <section class="section">
-      <div class="section-label">Projets personnels</div>
-
-      <div class="job">
-        <div class="job-header">
-          <div class="job-company">Site CV Cloud</div>
-          <div class="job-date">2026</div>
-        </div>
-        <div class="job-title">AWS · OpenTofu · GitHub Actions</div>
-
-        <div class="job-category">Infrastructure</div>
-        <ul class="job-items">
-          <li>Hébergement statique sur S3 avec distribution CloudFront, certificat ACM et domaine personnalisé</li>
-          <li>Infrastructure as Code avec OpenTofu, state distant sur S3 avec verrouillage DynamoDB</li>
-          <li>Sécurité : OAC, headers de sécurité, restriction géographique, chiffrement KMS</li>
-        </ul>
-
-        <div class="job-category">Backend</div>
-        <ul class="job-items">
-          <li>Compteur de visites serverless : API Gateway HTTP + Lambda Python + DynamoDB</li>
-          <li>Traçage distribué avec AWS X-Ray, Dead Letter Queue SQS pour la résilience</li>
-        </ul>
-
-        <div class="job-category">CI/CD & Qualité</div>
-        <ul class="job-items">
-          <li>Pipeline GitHub Actions : tests pytest, tflint, checkov</li>
-          <li>Alertes CloudWatch sur erreurs Lambda et API Gateway via SNS</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- EDUCATION -->
-    <section class="section">
-      <div class="section-label">Formation</div>
-      <div class="edu">
-        <div class="edu-school">EPSI — École Privée des Sciences Informatiques</div>
-        <div class="edu-degree">BAC+5 · Expert en informatique et système d'information (RNCP Niveau I)</div>
-        <div class="edu-date">2018 — 2020 · Lyon</div>
-      </div>
-    </section>
-
-    <footer>
-      <div>Lyon, France · <span class="available">Disponible</span><span class="cursor"></span></div>
-      <div>fidele@samuth.com · <span id="visitor-count">—</span> vues</div>
-    </footer>
-
+      <a href="#competences" class="scroll-hint" style="display:inline-flex; flex-direction:column; align-items:center; gap:6px; text-decoration:none;">
+        <i class="fa-solid fa-arrow-down" style="font-size:20px;"></i>
+      </a>
+    </div>
   </div>
+
+  <hr class="divider">
+
+  <!-- COMPÉTENCES -->
+  <section id="competences">
+    <h2 class="section-title">Compétences</h2>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <h3>CI/CD & Automatisation</h3>
+        <div class="tags">
+          <span class="tag">GitLab CI</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Bitrise</span>
+          <span class="tag">Ansible</span>
+          <span class="tag">n8n</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h3>Conteneurisation & Orchestration</h3>
+        <div class="tags">
+          <span class="tag">Docker</span>
+          <span class="tag">Podman</span>
+          <span class="tag">Kubernetes</span>
+          <span class="tag">ArgoCD</span>
+          <span class="tag">Helm</span>
+          <span class="tag">Kustomize</span>
+          <span class="tag">Kaniko</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h3>Observabilité</h3>
+        <div class="tags">
+          <span class="tag">Prometheus</span>
+          <span class="tag">Grafana</span>
+          <span class="tag">Loki</span>
+          <span class="tag">Alertmanager</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h3>Infrastructure & Sécurité</h3>
+        <div class="tags">
+          <span class="tag">Terraform</span>
+          <span class="tag">Keycloak</span>
+          <span class="tag">OIDC</span>
+          <span class="tag">SAML</span>
+          <span class="tag">Entra ID</span>
+          <span class="tag">Linux</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h3>Langages & Scripts</h3>
+        <div class="tags">
+          <span class="tag">Python</span>
+          <span class="tag">Bash</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h3>Systèmes & Réseaux</h3>
+        <div class="tags">
+          <span class="tag">Active Directory</span>
+          <span class="tag">Firewall</span>
+          <span class="tag">DHCP</span>
+          <span class="tag">DNS</span>
+          <span class="tag">VPN</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h3>Cloud AWS</h3>
+        <div class="tags">
+          <span class="tag">S3</span>
+          <span class="tag">CloudFront</span>
+          <span class="tag">Lambda</span>
+          <span class="tag">API Gateway</span>
+          <span class="tag">DynamoDB</span>
+          <span class="tag">ACM</span>
+          <span class="tag">IAM</span>
+          <span class="tag">KMS</span>
+          <span class="tag">CloudWatch</span>
+          <span class="tag">SQS</span>
+          <span class="tag">SNS</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- EXPÉRIENCE -->
+  <section id="experience">
+    <p class="section-label">Parcours professionnel</p>
+    <h2 class="section-title">Expérience</h2>
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <strong>Amiltone</strong>
+            <span class="tl-period">05/2021 – Aujourd'hui</span>
+          </div>
+          <div class="tl-role">Ingénieur DevOps &amp; SRE</div>
+          <div class="tl-location"><i class="fa-solid fa-location-dot"></i> Lyon, France</div>
+          <ul>
+            <li>
+              <b>CI/CD &amp; Automatisation</b>
+              <ul>
+                <li>Conception et optimisation de pipelines d'intégration et de déploiement continus (<b>GitLab CI</b>, <b>GitHub Actions</b>, <b>Bitrise</b>) afin d'accélérer les cycles de livraison et de fiabiliser les mises en production.</li>
+                <li>Automatisation de tâches opérationnelles via playbooks <b>Ansible</b>, scripts <b>Bash</b>/<b>Python</b> et workflows <b>n8n</b> : création de dépôts GitLab, rotation sécurisée de tokens, configuration de projets <b>SonarQube</b>, tableaux de bord <b>Grafana</b>, provisionnement d'espaces collaboratifs.</li>
+              </ul>
+            </li>
+            <li>
+              <b>Conteneurisation &amp; Orchestration</b>
+              <ul>
+                <li>Industrialisation du packaging applicatif avec <b>Docker</b>, <b>Kaniko</b> et <b>Podman</b>, garantissant portabilité et reproductibilité des environnements.</li>
+                <li>Pratiques <b>GitOps</b> avec <b>ArgoCD</b>, <b>Helm</b> et <b>Kustomize</b> pour des déploiements fiables sur <b>Kubernetes</b>.</li>
+              </ul>
+            </li>
+            <li>
+              <b>Observabilité &amp; Supervision</b>
+              <ul>
+                <li>Mise en place de la stack <b>Prometheus / Grafana / Loki / Alertmanager</b> pour la supervision centralisée et la détection proactive d'anomalies.</li>
+              </ul>
+            </li>
+            <li>
+              <b>Sécurité &amp; Authentification</b>
+              <ul>
+                <li>Déploiement de <b>Keycloak</b> pour la gestion centralisée des identités. Intégration <b>OpenID Connect</b> et <b>SAML</b> avec <b>Microsoft Entra ID</b> comme fournisseur d'identité.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <strong>Schneider Electric Systems France</strong>
+            <span class="tl-period">09/2018 – 08/2020</span>
+          </div>
+          <div class="tl-role">Expert Services (Alternance)</div>
+          <div class="tl-location"><i class="fa-solid fa-location-dot"></i> Dardilly, France</div>
+          <ul class="tl-simple">
+            <li>Configuration de machines virtuelles sous <b>Hyper-V</b> pour EcoStruxure Foxboro DCS</li>
+            <li>Configuration d'<b>Active Directory</b> pour EcoStruxure Foxboro DCS</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- PROJETS -->
+  <section id="projets personnels">
+    <p class="section-label">Veille technologique</p>
+    <h2 class="section-title">Projets personnels</h2>
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <strong>CV Cloud</strong>
+            <span class="tl-period">2025 – Aujourd'hui</span>
+          </div>
+          <div class="tl-role">AWS · OpenTofu · GitHub Actions · Lambda · DynamoDB</div>
+          <ul>
+            <li>
+              <b>Infrastructure</b>
+              <ul>
+                <li>Hébergement statique sur <b>S3</b> avec distribution <b>CloudFront</b>, certificat <b>ACM</b> et domaine personnalisé</li>
+                <li>Infrastructure as Code avec <b>OpenTofu</b>, state distant sur S3 avec verrouillage <b>DynamoDB</b></li>
+                <li>Sécurité : Origin Access Control, headers de sécurité, restriction géographique, chiffrement <b>KMS</b></li>
+              </ul>
+            </li>
+            <li>
+              <b>Backend</b>
+              <ul>
+                <li>Compteur de visites serverless : <b>API Gateway HTTP</b> + <b>Lambda Python</b> + <b>DynamoDB</b></li>
+                <li>Traçage distribué avec <b>AWS X-Ray</b>, Dead Letter Queue <b>SQS</b> pour la résilience</li>
+              </ul>
+            </li>
+            <li>
+              <b>CI/CD & Qualité</b>
+              <ul>
+                <li>Pipeline <b>GitHub Actions</b> : tests pytest/moto, tflint, checkov</li>
+                <li>Alertes <b>CloudWatch</b> sur erreurs Lambda et API Gateway via <b>SNS</b></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- FORMATION -->
+  <section id="formation">
+    <p class="section-label">Parcours académique</p>
+    <h2 class="section-title">Formation</h2>
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <strong>École privée des sciences informatiques EPSI</strong>
+            <span class="tl-period">2017 – 2020</span>
+          </div>
+          <div class="tl-role">BAC+5 · Expert en informatique et système d'information (RNCP Niveau I)</div>
+          <div class="tl-location"><i class="fa-solid fa-location-dot"></i> Lyon, France</div>
+          <ul class="tl-simple">
+            <li>Déploiement d'applications via <b>Docker</b> sur infrastructure cloud <b>AWS</b></li>
+            <li>Maquettage d'infrastructure réseau avec <b>DHCP</b>, <b>DNS</b>, <b>Active Directory</b> et pare-feu <b>pFsense</b></li>
+            <li>Cluster de virtualisation d'applications sous hyperviseur <b>Proxmox</b></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <strong>Université Claude Bernard Lyon 1</strong>
+            <span class="tl-period">2013 – 2016</span>
+          </div>
+          <div class="tl-role">BAC+2 · DUT Génie Électrique et Informatique Industrielle</div>
+          <div class="tl-location"><i class="fa-solid fa-location-dot"></i> Lyon, France</div>
+          <ul class="tl-simple">
+            <li>Analyse de trames réseaux sous oscilloscope et <b>Wireshark</b></li>
+            <li>Supervision d'automates sous <b>CitectSCADA</b></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Fidèle SAMUTH · Ingénieur DevOps &amp; SRE · Lyon, France</p>
+    <p style="margin-top:6px"><a href="mailto:fidele@samuth.com">fidele@samuth.com</a></p>
+  </footer>
+
 <script>
   fetch("__API_URL__/count")
     .then(r => r.json())
-    .then(data => document.getElementById("visitor-count").innerText = data.views);
+    .then(data => {
+      const el = document.getElementById("visitor-count");
+      if (el) el.innerText = data.views;
+    });
 </script>
 </body>
 </html>

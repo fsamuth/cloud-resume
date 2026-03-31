@@ -3,6 +3,9 @@ name: Deploy Resume
 on:
   push:
     branches: [main]
+    paths:
+      - 'terraform/**'
+      - 'website/**'
 
 jobs:
   deploy:
@@ -16,7 +19,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-      
+
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        with:
+          filters: |
+            website:
+              - 'website/**'
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
@@ -30,15 +41,27 @@ jobs:
         working-directory: terraform
         run: tofu init
 
-      - name: Tofu Apply
+      - name: Tofu Plan
+        id: plan
         working-directory: terraform
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
-        run: tofu apply -auto-approve
+        run: |
+          set +e
+          tofu plan -detailed-exitcode -out=tfplan
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
+
+      - name: Tofu Apply
+        if: steps.plan.outputs.exit_code == '2'
+        working-directory: terraform
+        run: tofu apply -auto-approve tfplan
 
       - name: Sync website to S3
+        if: steps.changes.outputs.website == 'true'
         run: |
           API_URL=$(cd terraform && tofu output -raw api_gateway_url)
           sed -i "s|__API_URL__|$API_URL|g" website/index.html
@@ -46,6 +69,7 @@ jobs:
           aws s3 sync website/ s3://$BUCKET/ --delete
 
       - name: Invalidate CloudFront cache
+        if: steps.changes.outputs.website == 'true'
         run: |
           DIST_ID=$(cd terraform && tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \

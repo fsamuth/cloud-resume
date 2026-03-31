@@ -2,6 +2,9 @@ name: Plan infrastructure
 
 on:
   pull_request:
+    paths:
+      - 'terraform/**'
+      - 'website/**'
 
 jobs:
   plan:

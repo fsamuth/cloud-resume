@@ -2,27 +2,31 @@ name: Plan infrastructure
 
 on:
   pull_request:
+    # Only run when infra or website files change
     paths:
       - 'terraform/**'
       - 'website/**'
 
+# Cancel in-progress runs on the same branch when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Runs independently of AWS — no credentials needed
   test:
     name: Test
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      checks: write
+      checks: write # required to publish test results
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
+      # Restore cached venv if requirements.txt hasn't changed
       - name: Cache pip dependencies
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 #v5.0.4
         with:
@@ -35,6 +39,7 @@ jobs:
           .venv/bin/pip install -r requirements.txt
           cd website && ../.venv/bin/python -m pytest tests/ -v --junitxml=../pytest-report.xml
 
+      # Publish test results as a check on the PR, even if tests fail
       - name: Test report
         uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 #v3.0.0
         if: always()
@@ -43,19 +48,21 @@ jobs:
           path: pytest-report.xml
           reporter: java-junit
 
+  # Runs in parallel with test — requires AWS credentials
   plan:
     name: Plan
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write
+      id-token: write    # required for OIDC authentication with AWS
       contents: read
-      pull-requests: write
+      pull-requests: write # required to post the plan comment on the PR
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
+      # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
@@ -74,6 +81,7 @@ jobs:
           tflint --init
           tflint
 
+      # Scan Terraform files for security issues, upload results to GitHub Security tab
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@0ce65fae06c148e349f955c3c35ad049c11e838c #v12.3092.0
         with:
@@ -102,6 +110,7 @@ jobs:
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
         run: tofu plan -out=tfplan
 
+      # Posts the plan diff as a comment on the PR for review
       - name: Post plan comment
         uses: borchero/terraform-plan-comment@d177dfb833ccfb6ef6022700796190dfe54830f1 #v3.0.0
         with:

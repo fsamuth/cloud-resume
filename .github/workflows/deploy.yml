@@ -3,10 +3,12 @@ name: Deploy Resume
 on:
   push:
     branches: [main]
+    # Only run when infra or website files change
     paths:
       - 'terraform/**'
       - 'website/**'
 
+# Cancel in-progress runs on the same branch when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -17,13 +19,14 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write
+      id-token: write # required for OIDC authentication with AWS
       contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
+      # Detect whether website files changed to conditionally sync S3 and invalidate cache
       - name: Detect changed paths
         id: changes
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
@@ -32,6 +35,7 @@ jobs:
             website:
               - 'website/**'
 
+      # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
@@ -45,6 +49,8 @@ jobs:
         working-directory: terraform
         run: tofu init
 
+      # exit code 0 = no changes, 1 = error, 2 = changes pending
+      # Step succeeds for 0 and 2, fails only on 1
       - name: Tofu Plan
         id: plan
         working-directory: terraform
@@ -59,11 +65,13 @@ jobs:
           echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
           if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
 
+      # Only apply if plan detected changes
       - name: Tofu Apply
         if: steps.plan.outputs.exit_code == '2'
         working-directory: terraform
         run: tofu apply -auto-approve tfplan
 
+      # Only sync if website files changed
       - name: Sync website to S3
         if: steps.changes.outputs.website == 'true'
         run: |
@@ -72,6 +80,7 @@ jobs:
           BUCKET=$(cd terraform && tofu output -raw s3_bucket_name)
           aws s3 sync website/ s3://$BUCKET/ --delete
 
+      # Only invalidate if website files changed
       - name: Invalidate CloudFront cache
         if: steps.changes.outputs.website == 'true'
         run: |

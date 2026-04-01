@@ -27,6 +27,33 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
       protection = true
       override   = true
     }
+    content_security_policy {
+      content_security_policy = "default-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com data:; img-src 'self' data:; script-src 'self'; object-src 'none';"
+      override                = true
+    }
+  }
+
+  custom_headers_config {
+    items {
+      header   = "Cross-Origin-Embedder-Policy"
+      value    = "require-corp"
+      override = true
+    }
+    items {
+      header   = "Cross-Origin-Opener-Policy"
+      value    = "same-origin"
+      override = true
+    }
+    items {
+      header   = "Cross-Origin-Resource-Policy"
+      value    = "same-origin"
+      override = true
+    }
+    items {
+      header   = "Permissions-Policy"
+      value    = "camera=(), microphone=(), geolocation=(), payment=()"
+      override = true
+    }
   }
 }
 

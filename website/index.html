@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fidèle SAMUTH – Ingénieur DevOps & SRE</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
   <style>
     :root {
       --bg: #0f0f1a;
@@ -381,6 +381,18 @@
 
     .tl-simple > li b { color: var(--accent2); font-weight: 600; }
 
+    .scroll-hint-link {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .scroll-hint-icon { font-size: 20px; }
+
+    .footer-email { margin-top: 6px; }
+
     /* ── FOOTER ── */
     footer {
       text-align: center;
@@ -429,8 +441,8 @@
         <a class="contact-chip" href="mailto:fidele@samuth.com"><i class="fa-solid fa-envelope ci"></i> fidele@samuth.com</a>
         <span class="contact-chip"><i class="fa-solid fa-location-dot ci"></i> 69003 Lyon, France</span>
       </div>
-      <a href="#competences" class="scroll-hint" style="display:inline-flex; flex-direction:column; align-items:center; gap:6px; text-decoration:none;">
-        <i class="fa-solid fa-arrow-down" style="font-size:20px;"></i>
+      <a href="#competences" class="scroll-hint scroll-hint-link">
+        <i class="fa-solid fa-arrow-down scroll-hint-icon"></i>
       </a>
     </div>
   </div>
@@ -679,7 +691,7 @@
   <!-- FOOTER -->
   <footer>
     <p>Fidèle SAMUTH · Ingénieur DevOps &amp; SRE · Lyon, France</p>
-    <p style="margin-top:6px"><a href="mailto:fidele@samuth.com">fidele@samuth.com</a></p>
+    <p class="footer-email"><a href="mailto:fidele@samuth.com">fidele@samuth.com</a></p>
   </footer>
 
 <script>

@@ -1,0 +1,25 @@
+name: Security scan
+
+on:
+  schedule:
+    # Every Monday at 8am UTC — catches new CVEs even without a deploy
+    - cron: '0 8 * * 1'
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  zap:
+    name: ZAP Baseline Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: write # required for ZAP to open scan report issues
+
+    steps:
+      # Passive security scan — no attack payloads, safe against production
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
+        with:
+          target: "https://fidele.samuth.com"
+          fail_action: false
+          issue_title: "ZAP Weekly Scan Report"

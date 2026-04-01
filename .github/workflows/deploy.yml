@@ -21,6 +21,7 @@ jobs:
     permissions:
       id-token: write # required for OIDC authentication with AWS
       contents: read
+      issues: write   # required for ZAP to open scan report issues
 
     steps:
       - name: Checkout code
@@ -88,3 +89,11 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id $DIST_ID \
             --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
+
+      # Passive security scan against the live site — findings uploaded to GitHub Security tab
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
+        with:
+          target: "https://fidele.samuth.com"
+          fail_action: false
+          issue_title: "ZAP Baseline Scan Report"

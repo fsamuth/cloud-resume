@@ -28,7 +28,7 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
       override   = true
     }
     content_security_policy {
-      content_security_policy = "default-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com data:; img-src 'self' data:; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none';"
+      content_security_policy = "default-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com data:; img-src 'self' data:; script-src 'self'; connect-src https://*.execute-api.eu-west-3.amazonaws.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none';"
       override                = true
     }
   }

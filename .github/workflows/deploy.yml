@@ -71,7 +71,7 @@ jobs:
       - name: Sync website to S3
         if: steps.changes.outputs.website == 'true'
         run: |
-          API_URL=$(cd terraform && tofu output -raw api_gateway_url)
+          API_URL=$(cd terraform && tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" website/public/counter.js
           BUCKET=$(cd terraform && tofu output -raw s3_bucket_name)
           aws s3 sync website/public/ s3://$BUCKET/ --delete

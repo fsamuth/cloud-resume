@@ -32,6 +32,29 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
       override                = true
     }
   }
+
+  custom_headers_config {
+    items {
+      header   = "Cross-Origin-Embedder-Policy"
+      value    = "require-corp"
+      override = true
+    }
+    items {
+      header   = "Cross-Origin-Opener-Policy"
+      value    = "same-origin"
+      override = true
+    }
+    items {
+      header   = "Cross-Origin-Resource-Policy"
+      value    = "same-origin"
+      override = true
+    }
+    items {
+      header   = "Permissions-Policy"
+      value    = "camera=(), microphone=(), geolocation=(), payment=()"
+      override = true
+    }
+  }
 }
 
 resource "aws_cloudfront_distribution" "resume" {

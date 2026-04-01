@@ -27,6 +27,10 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
       protection = true
       override   = true
     }
+    content_security_policy {
+      content_security_policy = "default-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com; img-src 'self' data:; script-src 'self'; object-src 'none';"
+      override                = true
+    }
   }
 }
 

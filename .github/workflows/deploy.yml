@@ -35,7 +35,7 @@ jobs:
         with:
           filters: |
             website:
-              - 'website/**'
+              - 'website/public/**'
 
       # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
@@ -72,9 +72,9 @@ jobs:
         if: steps.changes.outputs.website == 'true'
         run: |
           API_URL=$(cd terraform && tofu output -raw api_gateway_url)
-          sed -i "s|__API_URL__|$API_URL|g" website/index.html
+          sed -i "s|__API_URL__|$API_URL|g" website/public/counter.js
           BUCKET=$(cd terraform && tofu output -raw s3_bucket_name)
-          aws s3 sync website/ s3://$BUCKET/ --delete
+          aws s3 sync website/public/ s3://$BUCKET/ --delete
 
       # Only invalidate if website files changed
       - name: Invalidate CloudFront cache

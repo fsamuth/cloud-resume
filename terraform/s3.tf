@@ -26,9 +26,9 @@ resource "aws_s3_bucket_public_access_block" "resume" {
 resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.resume.id
   key          = "index.html"
-  source       = "../website/index.html"
+  source       = "../website/public/index.html"
   content_type = "text/html"
-  etag         = filemd5("../website/index.html")
+  etag         = filemd5("../website/public/index.html")
 
 }
 

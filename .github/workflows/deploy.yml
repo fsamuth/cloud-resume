@@ -51,28 +51,21 @@ jobs:
         working-directory: terraform
         run: tofu init
 
-      # exit code 0 = no changes, 1 = error, 2 = changes pending
-      # Step succeeds for 0 and 2, fails only on 1
       - name: Tofu Plan
-        id: plan
         working-directory: terraform
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
-        run: |
-          set +e
-          tofu plan -detailed-exitcode -out=tfplan
-          EXIT_CODE=$?
-          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-          if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
-          exit 0
+        run: tofu plan
 
-      # Only apply if plan detected changes
       - name: Tofu Apply
-        if: steps.plan.outputs.exit_code == '2'
         working-directory: terraform
-        run: tofu apply -auto-approve tfplan
+        env:
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
+          TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+        run: tofu apply -auto-approve
 
       # Only sync if website files changed
       - name: Sync website to S3

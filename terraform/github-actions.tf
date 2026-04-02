@@ -42,7 +42,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutBucketVersioning",
       "s3:PutBucketOwnershipControls",
       "s3:PutBucketPublicAccessBlock",
-      "s3:PutLifecycleConfiguration"
+      "s3:PutLifecycleConfiguration",
+      "s3:PutBucketTagging"
     ]
     resources = [
       "${aws_s3_bucket.resume.arn}/*",
@@ -105,7 +106,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "dynamodb:DescribeTable",
       "dynamodb:DescribeContinuousBackups",
       "dynamodb:DescribeTimeToLive",
-      "dynamodb:ListTagsOfResource"
+      "dynamodb:ListTagsOfResource",
+      "dynamodb:TagResource"
     ]
     resources = [
       aws_dynamodb_table.tfstate_lock.arn,
@@ -171,7 +173,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "acm:DescribeCertificate",
-      "acm:ListTagsForCertificate"
+      "acm:ListTagsForCertificate",
+      "acm:AddTagsToCertificate"
     ]
     resources = [aws_acm_certificate.resume.arn]
   }
@@ -184,7 +187,9 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "iam:GetRolePolicy",
       "iam:ListRolePolicies",
       "iam:ListAttachedRolePolicies",
-      "iam:GetOpenIDConnectProvider"
+      "iam:GetOpenIDConnectProvider",
+      "iam:TagRole",
+      "iam:TagOpenIDConnectProvider"
     ]
     resources = [
       aws_iam_role.github_actions.arn,
@@ -213,7 +218,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "kms:DescribeKey",
       "kms:GetKeyPolicy",
       "kms:GetKeyRotationStatus",
-      "kms:ListResourceTags"
+      "kms:ListResourceTags",
+      "kms:TagResource"
     ]
     resources = [aws_kms_key.tfstate_key.arn]
   }
@@ -275,7 +281,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "logs:CreateLogGroup",
       "logs:DeleteLogGroup",
-      "logs:PutRetentionPolicy"
+      "logs:PutRetentionPolicy",
+      "logs:TagResource"
     ]
     resources = [aws_cloudwatch_log_group.api_gateway.arn]
   }
@@ -321,7 +328,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "sns:CreateTopic",
       "sns:DeleteTopic",
       "sns:Subscribe",
-      "sns:Unsubscribe"
+      "sns:Unsubscribe",
+      "sns:TagResource"
     ]
     resources = [aws_sns_topic.alerts.arn]
   }
@@ -365,7 +373,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "budgets:CreateBudget",
       "budgets:ModifyBudget",
-      "budgets:DeleteBudget"
+      "budgets:DeleteBudget",
+      "budgets:TagResource"
     ]
     resources = ["arn:aws:budgets::${data.aws_caller_identity.current.account_id}:budget/${var.project_name}-monthly-budget"]
   }

@@ -43,7 +43,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutBucketOwnershipControls",
       "s3:PutBucketPublicAccessBlock",
       "s3:PutLifecycleConfiguration",
-      "s3:PutBucketTagging"
+      "s3:PutBucketTagging",
+      "s3:PutObjectTagging"
     ]
     resources = [
       "${aws_s3_bucket.resume.arn}/*",
@@ -134,7 +135,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "cloudfront:UpdateDistribution",
       "cloudfront:CreateResponseHeadersPolicy",
       "cloudfront:UpdateResponseHeadersPolicy",
-      "cloudfront:DeleteResponseHeadersPolicy"
+      "cloudfront:DeleteResponseHeadersPolicy",
+      "cloudfront:TagResource"
     ]
     resources = [
       aws_cloudfront_distribution.resume.arn,
@@ -244,7 +246,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "lambda:UpdateFunctionConfiguration",
       "lambda:DeleteFunction",
       "lambda:AddPermission",
-      "lambda:RemovePermission"
+      "lambda:RemovePermission",
+      "lambda:TagResource"
     ]
     resources = [aws_lambda_function.visitor_counter.arn]
   }
@@ -305,7 +308,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "sqs:CreateQueue",
       "sqs:DeleteQueue",
       "sqs:SetQueueAttributes",
-      "sqs:TagQueue"
+      "sqs:TagQueue",
+      "sqs:UntagQueue"
     ]
     resources = [aws_sqs_queue.lambda_dlq.arn]
   }
@@ -349,7 +353,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "cloudwatch:PutMetricAlarm",
-      "cloudwatch:DeleteAlarms"
+      "cloudwatch:DeleteAlarms",
+      "cloudwatch:TagResource"
     ]
     resources = ["*"]
   }

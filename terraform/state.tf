@@ -22,22 +22,6 @@ resource "aws_s3_bucket_versioning" "tfstate" {
   }
 }
 
-resource "aws_dynamodb_table" "tfstate_lock" {
-  #checkov:skip=CKV_AWS_119:Default DynamoDB encryption is sufficient, CMK adds cost
-  name         = "${var.project_name}-tfstate-lock"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  point_in_time_recovery {
-    enabled = true
-  }
-
-}
 
 resource "aws_kms_key" "tfstate_key" {
   description             = "KMS key for Terraform state bucket encryption"

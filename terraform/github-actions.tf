@@ -92,18 +92,6 @@ data "aws_iam_policy_document" "github_actions_policy" {
   }
 
   statement {
-    sid    = "DynamoDBLock"
-    effect = "Allow"
-    actions = [
-      "dynamodb:PutItem",
-      "dynamodb:DeleteItem"
-    ]
-    resources = [
-      aws_dynamodb_table.tfstate_lock.arn
-    ]
-  }
-
-  statement {
     sid    = "DynamoDBRead"
     effect = "Allow"
     actions = [
@@ -114,10 +102,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "dynamodb:ListTagsOfResource",
       "dynamodb:TagResource"
     ]
-    resources = [
-      aws_dynamodb_table.tfstate_lock.arn,
-      aws_dynamodb_table.visitor_counter.arn
-    ]
+    resources = [aws_dynamodb_table.visitor_counter.arn]
   }
 
   statement {

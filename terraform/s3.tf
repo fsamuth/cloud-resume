@@ -23,15 +23,6 @@ resource "aws_s3_bucket_public_access_block" "resume" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_object" "index" {
-  bucket       = aws_s3_bucket.resume.id
-  key          = "index.html"
-  source       = "../website/public/index.html"
-  content_type = "text/html"
-  etag         = filemd5("../website/public/index.html")
-
-}
-
 resource "aws_s3_bucket_policy" "resume" {
   bucket = aws_s3_bucket.resume.id
   policy = data.aws_iam_policy_document.resume.json

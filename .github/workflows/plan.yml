@@ -2,10 +2,11 @@ name: Plan infrastructure
 
 on:
   pull_request:
-    # Only run when infra or website files change
+    # Only run when infra, workflows or website files change
     paths:
       - 'terraform/**'
       - 'website/**'
+      - '.github/workflows/**'
 
 # Cancel in-progress runs on the same branch when a new commit is pushed
 concurrency:

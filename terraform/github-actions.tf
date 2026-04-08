@@ -39,6 +39,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "s3:PutObject",
       "s3:DeleteObject",
+      "s3:DeleteObjectVersion",
       "s3:PutBucketVersioning",
       "s3:PutBucketOwnershipControls",
       "s3:PutBucketPublicAccessBlock",
@@ -76,7 +77,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetBucketTagging",
       "s3:GetObjectTagging",
       "s3:GetBucketOwnershipControls",
-      "s3:ListBucketVersions"
+      "s3:ListBucketVersions",
+      "s3:GetObjectVersion"
     ]
     resources = [
       aws_s3_bucket.resume.arn,

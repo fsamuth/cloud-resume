@@ -398,6 +398,31 @@ data "aws_iam_policy_document" "github_actions_policy" {
     resources = ["arn:aws:apigateway:*::/*"]
   }
 
+  statement {
+    sid    = "Route53Write"
+    effect = "Allow"
+    actions = [
+      "route53:CreateHostedZone",
+      "route53:DeleteHostedZone",
+      "route53:ChangeResourceRecordSets",
+      "route53:ChangeTagsForResource"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "Route53Read"
+    effect = "Allow"
+    actions = [
+      "route53:GetHostedZone",
+      "route53:ListHostedZones",
+      "route53:ListResourceRecordSets",
+      "route53:ListTagsForResource",
+      "route53:GetChange"
+    ]
+    resources = ["*"]
+  }
+
 }
 
 resource "aws_iam_role_policy" "github_actions" {

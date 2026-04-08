@@ -37,6 +37,16 @@ jobs:
             website:
               - 'website/public/**'
 
+      # On workflow_dispatch, force all steps to run regardless of changed files
+      - name: Set run flags
+        id: flags
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "website=true" >> $GITHUB_OUTPUT
+          else
+            echo "website=${{ steps.changes.outputs.website }}" >> $GITHUB_OUTPUT
+          fi
+
       # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
@@ -51,14 +61,6 @@ jobs:
         working-directory: terraform
         run: tofu init
 
-      - name: Tofu Plan
-        working-directory: terraform
-        env:
-          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
-          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
-          TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
-        run: tofu plan
-
       - name: Tofu Apply
         working-directory: terraform
         env:
@@ -69,7 +71,7 @@ jobs:
 
       # Only sync if website files changed
       - name: Sync website to S3
-        if: steps.changes.outputs.website == 'true'
+        if: steps.flags.outputs.website == 'true'
         run: |
           API_URL=$(cd terraform && tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" website/public/counter.js
@@ -78,15 +80,16 @@ jobs:
 
       # Only invalidate if website files changed
       - name: Invalidate CloudFront cache
-        if: steps.changes.outputs.website == 'true'
+        if: steps.flags.outputs.website == 'true'
         run: |
           DIST_ID=$(cd terraform && tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
             --distribution-id $DIST_ID \
             --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
 
-      # Passive security scan against the live site — findings uploaded to GitHub Security tab
+      # Passive security scan — only runs when website content changed
       - name: ZAP Baseline Scan
+        if: steps.flags.outputs.website == 'true'
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
         with:
           target: "https://fidele.samuth.com"

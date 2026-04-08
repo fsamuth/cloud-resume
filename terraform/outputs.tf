@@ -29,8 +29,3 @@ output "sns_topic_arn" {
 output "lambda_function_name" {
   value = aws_lambda_function.visitor_counter.function_name
 }
-
-output "route53_nameservers" {
-  description = "Set these as custom nameservers in Namecheap dashboard"
-  value       = aws_route53_zone.resume.name_servers
-}

@@ -75,7 +75,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:GetBucketPublicAccessBlock",
       "s3:GetBucketTagging",
       "s3:GetObjectTagging",
-      "s3:GetBucketOwnershipControls"
+      "s3:GetBucketOwnershipControls",
+      "s3:ListBucketVersions"
     ]
     resources = [
       aws_s3_bucket.resume.arn,

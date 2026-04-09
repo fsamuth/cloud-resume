@@ -84,7 +84,9 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutBucketTagging",
       "s3:PutObjectTagging",
       "s3:CreateBucket",
-      "s3:PutBucketAcl"
+      "s3:PutBucketAcl",
+      "s3:PutBucketPolicy",
+      "s3:DeleteBucketPolicy"
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}",

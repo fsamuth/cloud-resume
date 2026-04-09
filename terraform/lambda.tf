@@ -1,7 +1,7 @@
 data "archive_file" "counter" {
   type        = "zip"
   source_file = "../website/counter.py"
-  output_path = "/tmp/counter.zip"
+  output_path = "${path.module}/lambda_package.zip"
 }
 
 resource "aws_iam_role" "lambda" {

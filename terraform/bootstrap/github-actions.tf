@@ -83,7 +83,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutLifecycleConfiguration",
       "s3:PutBucketTagging",
       "s3:PutObjectTagging",
-      "s3:CreateBucket"
+      "s3:CreateBucket",
+      "s3:PutBucketAcl"
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}",
@@ -132,7 +133,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "iam:PutRolePolicy",
       "iam:DeleteRolePolicy",
       "iam:PassRole",
-      "iam:TagRole"
+      "iam:TagRole",
+      "iam:ListInstanceProfilesForRole"
     ]
     resources = [
       aws_iam_role.github_actions.arn,
@@ -155,6 +157,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     sid    = "CloudFrontWrite"
     effect = "Allow"
     actions = [
+      "cloudfront:CreateDistribution",
       "cloudfront:CreateInvalidation",
       "cloudfront:CreateOriginAccessControl",
       "cloudfront:UpdateOriginAccessControl",
@@ -293,6 +296,21 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "logs:TagResource"
     ]
     resources = ["arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group:*"]
+  }
+
+  statement {
+    sid    = "CloudWatchLogDelivery"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogDelivery",
+      "logs:GetLogDelivery",
+      "logs:UpdateLogDelivery",
+      "logs:DeleteLogDelivery",
+      "logs:ListLogDeliveries",
+      "logs:PutResourcePolicy",
+      "logs:DescribeResourcePolicies"
+    ]
+    resources = ["*"]
   }
 
   statement {

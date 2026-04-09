@@ -1,35 +1,13 @@
-resource "aws_iam_openid_connect_provider" "github_actions" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+# Bootstrap resources — managed in terraform/bootstrap/, looked up here by name
+data "aws_iam_role" "github_actions" {
+  name = "github-actions-resume"
 }
 
-data "aws_iam_policy_document" "github_actions_assume_role" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect  = "Allow"
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:sub"
-      values = [
-        "repo:fsamuth/cloud-resume:ref:refs/heads/main",
-        "repo:fsamuth/cloud-resume:pull_request",
-        "repo:fsamuth/cloud-resume:environment:production"
-      ]
-    }
-  }
-
+data "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
 }
 
-resource "aws_iam_role" "github_actions" {
-  name               = "github-actions-resume"
-  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
-
-}
+data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "github_actions_policy" {
   #checkov:skip=CKV_AWS_111:Some AWS actions (CloudFront invalidations, ACM list) inherently require * as resource
@@ -50,7 +28,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = [
       "${aws_s3_bucket.resume.arn}/*",
-      "${aws_s3_bucket.tfstate.arn}/*",
+      "${data.aws_s3_bucket.tfstate.arn}/*",
       aws_s3_bucket.cloudfront_logs.arn,
       "${aws_s3_bucket.cloudfront_logs.arn}/*"
     ]
@@ -83,10 +61,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = [
       aws_s3_bucket.resume.arn,
-      aws_s3_bucket.tfstate.arn,
+      data.aws_s3_bucket.tfstate.arn,
       aws_s3_bucket.cloudfront_logs.arn,
       "${aws_s3_bucket.resume.arn}/*",
-      "${aws_s3_bucket.tfstate.arn}/*",
+      "${data.aws_s3_bucket.tfstate.arn}/*",
       "${aws_s3_bucket.cloudfront_logs.arn}/*"
     ]
   }
@@ -183,8 +161,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "iam:TagOpenIDConnectProvider"
     ]
     resources = [
-      aws_iam_role.github_actions.arn,
-      aws_iam_openid_connect_provider.github_actions.arn,
+      data.aws_iam_role.github_actions.arn,
+      data.aws_iam_openid_connect_provider.github_actions.arn,
       aws_iam_role.lambda.arn
     ]
   }
@@ -212,7 +190,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "kms:ListResourceTags",
       "kms:TagResource"
     ]
-    resources = [aws_kms_key.tfstate_key.arn]
+    resources = [data.aws_kms_alias.tfstate_key.target_key_arn]
   }
 
   statement {
@@ -223,7 +201,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "kms:Encrypt",
       "kms:GenerateDataKey"
     ]
-    resources = [aws_kms_key.tfstate_key.arn]
+    resources = [data.aws_kms_alias.tfstate_key.target_key_arn]
   }
 
   statement {
@@ -386,12 +364,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = ["arn:aws:apigateway:*::/*"]
   }
-
 }
 
 resource "aws_iam_role_policy" "github_actions" {
   name   = "github-actions-resume-policy"
-  role   = aws_iam_role.github_actions.id
+  role   = data.aws_iam_role.github_actions.id
   policy = data.aws_iam_policy_document.github_actions_policy.json
-
 }

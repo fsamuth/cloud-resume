@@ -5,7 +5,7 @@ data "archive_file" "counter" {
 }
 
 resource "aws_iam_role" "lambda" {
-  name               = "lambda-resume"
+  name               = "${var.project_name}-lambda"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 
 }
@@ -22,7 +22,7 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 resource "aws_iam_role_policy" "lambda_visitor_counter_policy" {
-  name   = "lambda-visitor-counter-policy"
+  name   = "${var.project_name}-lambda-policy"
   role   = aws_iam_role.lambda.id
   policy = data.aws_iam_policy_document.lambda_visitor_counter_policy.json
 
@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "lambda_visitor_counter_policy" {
       "logs:PutLogEvents"
     ]
     resources = [
-      "arn:aws:logs:${var.aws_region}:*:log-group:/aws/lambda/visitor-counter:*"
+      "arn:aws:logs:${var.aws_region}:*:log-group:/aws/lambda/${var.project_name}-visitor-counter:*"
     ]
   }
   statement {
@@ -75,7 +75,7 @@ resource "aws_lambda_function" "visitor_counter" {
   #checkov:skip=CKV_AWS_272:Code signing not required for a personal project
   #checkov:skip=CKV_AWS_115:No concurrency risk on a low-traffic personal site
   #checkov:skip=CKV_AWS_173:TABLE_NAME environment variable is not sensitive data
-  function_name    = "visitor-counter"
+  function_name    = "${var.project_name}-visitor-counter"
   role             = aws_iam_role.lambda.arn
   filename         = data.archive_file.counter.output_path
   source_code_hash = data.archive_file.counter.output_base64sha256

@@ -82,7 +82,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutBucketPublicAccessBlock",
       "s3:PutLifecycleConfiguration",
       "s3:PutBucketTagging",
-      "s3:PutObjectTagging"
+      "s3:PutObjectTagging",
+      "s3:CreateBucket"
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}",
@@ -155,6 +156,9 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "cloudfront:CreateInvalidation",
+      "cloudfront:CreateOriginAccessControl",
+      "cloudfront:UpdateOriginAccessControl",
+      "cloudfront:DeleteOriginAccessControl",
       "cloudfront:UpdateDistribution",
       "cloudfront:CreateResponseHeadersPolicy",
       "cloudfront:UpdateResponseHeadersPolicy",
@@ -247,7 +251,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "dynamodb:CreateTable",
       "dynamodb:DeleteTable",
-      "dynamodb:UpdateTable"
+      "dynamodb:UpdateTable",
+      "dynamodb:UpdateContinuousBackups"
     ]
     resources = ["arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${var.project_name}-*"]
   }
@@ -261,6 +266,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "apigateway:PUT",
       "apigateway:PATCH",
       "apigateway:DELETE",
+      "apigateway:TagResource",
       "execute-api:*"
     ]
     resources = ["arn:aws:apigateway:*::/*"]
@@ -329,6 +335,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "sns:DeleteTopic",
       "sns:Subscribe",
       "sns:Unsubscribe",
+      "sns:SetTopicAttributes",
       "sns:TagResource"
     ]
     resources = ["arn:aws:sns:*:${data.aws_caller_identity.current.account_id}:${var.project_name}-*"]

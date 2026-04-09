@@ -22,7 +22,6 @@ resource "aws_s3_bucket_versioning" "tfstate" {
   }
 }
 
-
 resource "aws_kms_key" "tfstate_key" {
   description             = "KMS key for Terraform state bucket encryption"
   enable_key_rotation     = true
@@ -41,7 +40,11 @@ resource "aws_kms_key" "tfstate_key" {
       }
     ]
   })
+}
 
+resource "aws_kms_alias" "tfstate_key" {
+  name          = "alias/${var.project_name}-tfstate"
+  target_key_id = aws_kms_key.tfstate_key.key_id
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "tfstate_key" {

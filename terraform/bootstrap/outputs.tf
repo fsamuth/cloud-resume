@@ -7,3 +7,8 @@ output "tfstate_bucket_name" {
   description = "S3 bucket name for remote state — used in terraform/backend.tf"
   value       = aws_s3_bucket.tfstate.id
 }
+
+output "artifacts_bucket_name" {
+  description = "S3 bucket name for CI/CD artifacts (Lambda packages)"
+  value       = aws_s3_bucket.artifacts.id
+}

@@ -73,6 +73,12 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
+      - name: Compute Lambda package key
+        id: build
+        run: |
+          HASH=$(sha256sum website/counter.py | cut -d' ' -f1)
+          echo "s3_key=lambda/$HASH/counter.zip" >> $GITHUB_OUTPUT
+
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@b480b8fcdaa6f2c577f8e4fa799e89e756bb7c93 #v6.2.2
 
@@ -109,6 +115,7 @@ jobs:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+          TF_VAR_lambda_s3_key: ${{ steps.build.outputs.s3_key }}
         run: tofu plan -out=tfplan
 
       # Posts the plan diff as a comment on the PR for review

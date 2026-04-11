@@ -5,10 +5,6 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
-    archive = {
-      source  = "hashicorp/archive"
-      version = "~> 2.0"
-    }
   }
 }
 
@@ -18,7 +14,7 @@ provider "aws" {
   default_tags {
     tags = {
       project     = var.project_name
-      environment = "prod"
+      environment = var.environment
       managed_by  = "opentofu"
     }
   }
@@ -31,7 +27,7 @@ provider "aws" {
   default_tags {
     tags = {
       project     = var.project_name
-      environment = "prod"
+      environment = var.environment
       managed_by  = "opentofu"
     }
   }

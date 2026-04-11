@@ -60,6 +60,16 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
+      - name: Build and upload Lambda package
+        id: build
+        run: |
+          cd website
+          zip /tmp/counter.zip counter.py
+          HASH=$(sha256sum counter.py | cut -d' ' -f1)
+          echo "s3_key=lambda/$HASH/counter.zip" >> $GITHUB_OUTPUT
+          aws s3 ls s3://${{ vars.PROJECT_NAME }}-artifacts/lambda/$HASH/counter.zip || \
+            aws s3 cp /tmp/counter.zip s3://${{ vars.PROJECT_NAME }}-artifacts/lambda/$HASH/counter.zip
+
       - name: Tofu Init
         working-directory: terraform
         run: tofu init
@@ -70,15 +80,14 @@ jobs:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+          TF_VAR_lambda_s3_key: ${{ steps.build.outputs.s3_key }}
         run: tofu plan -out=tfplan
 
       - name: Upload plan
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
         with:
           name: tfplan
-          path: |
-            terraform/tfplan
-            terraform/lambda_package.zip
+          path: terraform/tfplan
           retention-days: 1
 
   apply:

@@ -25,3 +25,7 @@ output "sns_topic_arn" {
 output "lambda_function_name" {
   value = aws_lambda_function.visitor_counter.function_name
 }
+
+output "lambda_s3_key" {
+  value = aws_lambda_function.visitor_counter.s3_key
+}

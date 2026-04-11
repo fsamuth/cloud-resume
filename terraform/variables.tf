@@ -18,3 +18,14 @@ variable "alert_email" {
   description = "Email address to receive CloudWatch alarm notifications"
   type        = string
 }
+
+variable "environment" {
+  description = "Environment name — used for cost allocation tags"
+  type        = string
+  default     = "prod"
+}
+
+variable "lambda_s3_key" {
+  description = "S3 key of the Lambda deployment package"
+  type        = string
+}

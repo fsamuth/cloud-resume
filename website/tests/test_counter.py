@@ -52,15 +52,9 @@ def test_dynamodb_error_returns_500(dynamodb_table):
         body = json.loads(response["body"])
         assert "error" in body
 
-def test_cors_header_on_success(dynamodb_table):
+def test_no_cors_header_in_response(dynamodb_table):
+    # CORS is handled at the API Gateway level, not in Lambda
     with mock_aws():
         from counter import handler
         response = handler({}, {})
-        assert response["headers"]["Access-Control-Allow-Origin"] == "*"
-
-def test_cors_header_on_error(dynamodb_table):
-    with mock_aws():
-        from counter import handler
-        with patch("counter.table.update_item", side_effect=Exception("Test error")):
-            response = handler({}, {})
-        assert response["headers"]["Access-Control-Allow-Origin"] == "*"
+        assert "headers" not in response

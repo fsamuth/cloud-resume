@@ -56,3 +56,19 @@ resource "aws_cloudwatch_metric_alarm" "api_gateway_5xx" {
     ApiId = aws_apigatewayv2_api.visitor_counter.id
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "api_gateway_throttling" {
+  alarm_name          = "${var.project_name}-api-throttling"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "4XXError"
+  namespace           = "AWS/ApiGateway"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 0
+  alarm_description   = "API Gateway is throttling requests (429)"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  dimensions = {
+    ApiId = aws_apigatewayv2_api.visitor_counter.id
+  }
+}

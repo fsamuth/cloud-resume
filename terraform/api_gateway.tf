@@ -1,6 +1,11 @@
 resource "aws_apigatewayv2_api" "visitor_counter" {
   name          = "${var.project_name}-api-gateway"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins = ["https://${var.domain_name}"]
+    allow_methods = ["GET"]
+  }
 }
 
 resource "aws_apigatewayv2_integration" "visitor_counter" {

@@ -20,13 +20,11 @@ def handler(event, context):
         )
         return {
             "statusCode": 200,
-            "headers": {"Access-Control-Allow-Origin": "*"},
             "body": json.dumps({"views": int(response["Attributes"]["views"])})
         }
     except Exception as e:
         logger.exception("Failed to update visitor counter: %s", e)
         return {
             "statusCode": 500,
-            "headers": {"Access-Control-Allow-Origin": "*"},
             "body": json.dumps({"error": "Internal server error"})
         }

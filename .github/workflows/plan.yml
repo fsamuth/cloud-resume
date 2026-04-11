@@ -83,7 +83,7 @@ jobs:
         uses: terraform-linters/setup-tflint@b480b8fcdaa6f2c577f8e4fa799e89e756bb7c93 #v6.2.2
 
       - name: Run TFLint
-        working-directory: terraform
+        working-directory: terraform/app
         run: |
           tflint --init
           tflint
@@ -92,7 +92,7 @@ jobs:
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@0ce65fae06c148e349f955c3c35ad049c11e838c #v12.3092.0
         with:
-          directory: ./terraform/
+          directory: ./terraform/app/
           framework: terraform
           quiet: true
           soft_fail: true
@@ -106,11 +106,11 @@ jobs:
           sarif_file: checkov.sarif
 
       - name: Tofu Init
-        working-directory: terraform
+        working-directory: terraform/app
         run: tofu init
 
       - name: Tofu Plan
-        working-directory: terraform
+        working-directory: terraform/app
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
@@ -124,5 +124,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           terraform-cmd: tofu
-          working-directory: terraform
+          working-directory: terraform/app
           planfile: tfplan

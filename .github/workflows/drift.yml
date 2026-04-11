@@ -30,12 +30,12 @@ jobs:
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
       - name: Tofu Init
-        working-directory: terraform
+        working-directory: terraform/app
         run: tofu init
 
       - name: Run plan
         id: plan
-        working-directory: terraform
+        working-directory: terraform/app
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}

@@ -58,6 +58,7 @@ jobs:
 
     outputs:
       website: ${{ steps.flags.outputs.website }}
+      has_changes: ${{ steps.plan.outputs.has_changes }}
 
     steps:
       - name: Checkout code
@@ -97,13 +98,24 @@ jobs:
         run: tofu init
 
       - name: Tofu Plan
+        id: plan
         working-directory: terraform/app
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
           TF_VAR_lambda_s3_key: ${{ needs.build.outputs.lambda_s3_key }}
-        run: tofu plan -out=tfplan
+        run: |
+          set +e
+          tofu plan -detailed-exitcode -out=tfplan
+          EXIT_CODE=$?
+          set -e
+
+          # Exit 1 = error, fail immediately
+          if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
+
+          # Exit 0 = no changes, exit 2 = changes
+          echo "has_changes=$([ $EXIT_CODE -eq 2 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
       - name: Upload plan
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
@@ -117,11 +129,11 @@ jobs:
     needs: [build, plan]
     runs-on: ubuntu-latest
     environment: production # requires manual approval
+    if: needs.plan.outputs.has_changes == 'true'
 
     permissions:
       id-token: write # required for OIDC authentication with AWS
       contents: read
-      issues: write   # required for ZAP to open scan report issues
 
     steps:
       - name: Checkout code
@@ -151,18 +163,47 @@ jobs:
         working-directory: terraform/app
         run: tofu apply -auto-approve tfplan
 
-      # Only sync if website files changed
+  sync:
+    name: Sync website
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    # Run if website changed AND apply didn't fail (covers both apply succeeded or was skipped)
+    if: |
+      always() &&
+      needs.plan.outputs.website == 'true' &&
+      needs.apply.result != 'failure'
+
+    permissions:
+      id-token: write # required for OIDC authentication with AWS
+      contents: read
+      issues: write   # required for ZAP to open scan report issues
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      # Authenticate via OIDC — no long-lived credentials stored in secrets
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        working-directory: terraform/app
+        run: tofu init
+
       - name: Sync website to S3
-        if: needs.plan.outputs.website == 'true'
         run: |
           API_URL=$(cd terraform/app && tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" website/public/counter.js
           BUCKET=$(cd terraform/app && tofu output -raw s3_bucket_name)
           aws s3 sync website/public/ s3://$BUCKET/ --delete
 
-      # Only invalidate if website files changed
       - name: Invalidate CloudFront cache
-        if: needs.plan.outputs.website == 'true'
         run: |
           DIST_ID=$(cd terraform/app && tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
@@ -171,7 +212,6 @@ jobs:
 
       # Passive security scan — only runs when website content changed
       - name: ZAP Baseline Scan
-        if: needs.plan.outputs.website == 'true'
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
         with:
           target: "https://${{ vars.DOMAIN_NAME }}"

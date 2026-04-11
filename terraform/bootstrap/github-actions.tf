@@ -180,6 +180,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "cloudfront:GetDistribution",
       "cloudfront:GetOriginAccessControl",
       "cloudfront:GetResponseHeadersPolicy",
+      "cloudfront:GetCachePolicy",
+      "cloudfront:ListCachePolicies",
       "cloudfront:ListTagsForResource"
     ]
     resources = ["*"]

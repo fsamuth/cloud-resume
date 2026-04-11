@@ -1,3 +1,7 @@
+data "aws_cloudfront_cache_policy" "caching_optimized" {
+  name = "Managed-CachingOptimized"
+}
+
 resource "aws_cloudfront_origin_access_control" "resume" {
   name                              = "${var.project_name}-oac"
   origin_access_control_origin_type = "s3"
@@ -87,7 +91,7 @@ resource "aws_cloudfront_distribution" "resume" {
     cached_methods             = ["GET", "HEAD"]
     target_origin_id           = "s3-resume"
     viewer_protocol_policy     = "redirect-to-https"
-    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers.id
 
   }

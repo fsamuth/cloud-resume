@@ -75,6 +75,7 @@ resource "aws_lambda_function" "visitor_counter" {
   s3_key        = var.lambda_s3_key
   runtime       = "python3.13"
   handler       = "counter.handler"
+  timeout       = 10
   environment {
     variables = {
       TABLE_NAME = aws_dynamodb_table.visitor_counter.name

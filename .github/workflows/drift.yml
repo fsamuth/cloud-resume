@@ -1,0 +1,84 @@
+name: Drift Detection
+
+on:
+  schedule:
+    # Every day at 6am UTC — catches manual changes in AWS console
+    - cron: '0 6 * * *'
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  drift:
+    name: Detect Drift
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # required for OIDC authentication with AWS
+      contents: read
+      issues: write   # required to open drift issues
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        working-directory: terraform
+        run: tofu init
+
+      - name: Run plan
+        id: plan
+        working-directory: terraform
+        env:
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
+          TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+        run: |
+          # Read the currently deployed Lambda key from state
+          TF_VAR_lambda_s3_key=$(tofu output -raw lambda_s3_key)
+          export TF_VAR_lambda_s3_key
+
+          set +e
+          tofu plan -detailed-exitcode -no-color 2>&1 | tee plan_output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          # Store plan output for issue body (truncated to avoid GitHub limits)
+          {
+            echo 'plan_output<<EOF'
+            head -c 60000 plan_output.txt
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+          # Exit 0 = no changes, exit 2 = drift (handled below), exit 1 = error
+          if [ "$EXIT_CODE" -eq 1 ]; then exit 1; fi
+
+      - name: Open or update drift issue
+        if: steps.plan.outputs.exit_code == '2'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="Infrastructure drift detected"
+          BODY="## Drift detected — $(date -u '+%Y-%m-%d %H:%M UTC')
+
+          \`\`\`
+          ${{ steps.plan.outputs.plan_output }}
+          \`\`\`"
+
+          # Reuse existing open issue if one exists, otherwise create a new one
+          ISSUE=$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number')
+
+          if [ -n "$ISSUE" ]; then
+            gh issue comment "$ISSUE" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY" --label "drift"
+          fi

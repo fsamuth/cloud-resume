@@ -3,6 +3,8 @@ import os
 import boto3
 import pytest
 from moto import mock_aws
+from unittest.mock import patch
+from botocore.exceptions import ClientError
 
 os.environ["AWS_DEFAULT_REGION"] = "eu-west-3"
 os.environ["AWS_ACCESS_KEY_ID"] = "fake"
@@ -37,3 +39,28 @@ def test_second_visit_increments(dynamodb_table):
         assert response["statusCode"] == 200
         body = json.loads(response["body"])
         assert body["views"] == 2
+
+def test_dynamodb_error_returns_500(dynamodb_table):
+    with mock_aws():
+        from counter import handler
+        with patch("counter.table.update_item", side_effect=ClientError(
+            {"Error": {"Code": "InternalServerError", "Message": "Test error"}},
+            "UpdateItem"
+        )):
+            response = handler({}, {})
+        assert response["statusCode"] == 500
+        body = json.loads(response["body"])
+        assert "error" in body
+
+def test_cors_header_on_success(dynamodb_table):
+    with mock_aws():
+        from counter import handler
+        response = handler({}, {})
+        assert response["headers"]["Access-Control-Allow-Origin"] == "*"
+
+def test_cors_header_on_error(dynamodb_table):
+    with mock_aws():
+        from counter import handler
+        with patch("counter.table.update_item", side_effect=Exception("Test error")):
+            response = handler({}, {})
+        assert response["headers"]["Access-Control-Allow-Origin"] == "*"

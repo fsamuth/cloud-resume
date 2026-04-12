@@ -11,10 +11,6 @@ on:
         description: "S3 key of the Lambda deployment package"
         type: string
         required: true
-      domain_name:
-        description: "URL to run ZAP baseline scan against"
-        type: string
-        required: true
 
 jobs:
   plan:
@@ -143,10 +139,3 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id $DIST_ID \
             --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
-
-      - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
-        with:
-          target: ${{ inputs.domain_name }}
-          fail_action: false
-          issue_title: "ZAP Baseline Scan Report (${{ inputs.environment }})"

@@ -61,10 +61,6 @@ jobs:
       id-token: write
       contents: read
 
-    outputs:
-      has_changes: ${{ steps.plan.outputs.has_changes }}
-      website: ${{ steps.flags.outputs.website }}
-
     defaults:
       run:
         working-directory: terraform/envs/staging
@@ -129,7 +125,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, plan-staging]
     environment: staging
-    if: needs.plan-staging.outputs.has_changes == 'true'
 
     permissions:
       id-token: write
@@ -167,12 +162,9 @@ jobs:
   sync-staging:
     name: Sync website (staging)
     runs-on: ubuntu-latest
-    needs: [plan-staging, apply-staging]
+    needs: [apply-staging]
     environment: staging
-    if: |
-      always() &&
-      needs.plan-staging.outputs.website == 'true' &&
-      needs.apply-staging.result != 'failure'
+    if: always() && needs.apply-staging.result != 'failure'
 
     permissions:
       id-token: write
@@ -187,19 +179,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
+      # Detect website changes independently — avoids relying on plan-staging outputs
+      # which don't propagate from environment-scoped jobs
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        with:
+          filters: |
+            website:
+              - 'website/public/**'
+
+      - name: Set sync flag
+        id: flags
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "website=true" >> $GITHUB_OUTPUT
+          else
+            echo "website=${{ steps.changes.outputs.website }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Configure AWS credentials
+        if: steps.flags.outputs.website == 'true'
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Setup OpenTofu
+        if: steps.flags.outputs.website == 'true'
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
       - name: Tofu Init
+        if: steps.flags.outputs.website == 'true'
         run: tofu init
 
       - name: Sync website to S3
+        if: steps.flags.outputs.website == 'true'
         run: |
           API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" ../../website/public/counter.js
@@ -207,6 +222,7 @@ jobs:
           aws s3 sync ../../website/public/ s3://$BUCKET/ --delete
 
       - name: Invalidate CloudFront cache
+        if: steps.flags.outputs.website == 'true'
         run: |
           DIST_ID=$(tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
@@ -214,6 +230,7 @@ jobs:
             --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
 
       - name: ZAP Baseline Scan
+        if: steps.flags.outputs.website == 'true'
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
         with:
           target: "https://${{ vars.DOMAIN_NAME }}"
@@ -239,10 +256,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-
-    outputs:
-      has_changes: ${{ steps.plan.outputs.has_changes }}
-      website: ${{ steps.flags.outputs.website }}
 
     defaults:
       run:
@@ -308,7 +321,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, plan-production]
     environment: production # approval gate — reviewer sees plan output above before approving
-    if: needs.plan-production.outputs.has_changes == 'true'
 
     permissions:
       id-token: write
@@ -346,12 +358,8 @@ jobs:
   sync-production:
     name: Sync website (production)
     runs-on: ubuntu-latest
-    needs: [plan-production, apply-production]
-    # No environment key — uses repo-level secrets only, so no second approval needed
-    if: |
-      always() &&
-      needs.plan-production.outputs.website == 'true' &&
-      needs.apply-production.result != 'failure'
+    needs: [apply-production]
+    if: always() && needs.apply-production.result != 'failure'
 
     permissions:
       id-token: write
@@ -366,19 +374,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        with:
+          filters: |
+            website:
+              - 'website/public/**'
+
+      - name: Set sync flag
+        id: flags
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "website=true" >> $GITHUB_OUTPUT
+          else
+            echo "website=${{ steps.changes.outputs.website }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Configure AWS credentials
+        if: steps.flags.outputs.website == 'true'
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Setup OpenTofu
+        if: steps.flags.outputs.website == 'true'
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
       - name: Tofu Init
+        if: steps.flags.outputs.website == 'true'
         run: tofu init
 
       - name: Sync website to S3
+        if: steps.flags.outputs.website == 'true'
         run: |
           API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" ../../website/public/counter.js
@@ -386,6 +415,7 @@ jobs:
           aws s3 sync ../../website/public/ s3://$BUCKET/ --delete
 
       - name: Invalidate CloudFront cache
+        if: steps.flags.outputs.website == 'true'
         run: |
           DIST_ID=$(tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
@@ -393,6 +423,7 @@ jobs:
             --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
 
       - name: ZAP Baseline Scan
+        if: steps.flags.outputs.website == 'true'
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
         with:
           target: "https://fidele.samuth.com"

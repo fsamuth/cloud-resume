@@ -17,3 +17,7 @@ output "cloudfront_domain_name" {
 output "lambda_s3_key" {
   value = module.app.lambda_s3_key
 }
+
+output "dashboard_url" {
+  value = module.app.dashboard_url
+}

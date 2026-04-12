@@ -86,6 +86,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "s3:PutObjectTagging",
       "s3:CreateBucket",
       "s3:PutBucketAcl",
+      "s3:PutBucketLogging",
       "s3:PutBucketPolicy",
       "s3:DeleteBucketPolicy"
     ]
@@ -323,7 +324,9 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "cloudwatch:DescribeAlarms",
-      "cloudwatch:ListTagsForResource"
+      "cloudwatch:ListTagsForResource",
+      "cloudwatch:GetDashboard",
+      "cloudwatch:ListDashboards"
     ]
     resources = ["*"]
   }
@@ -334,7 +337,9 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "cloudwatch:PutMetricAlarm",
       "cloudwatch:DeleteAlarms",
-      "cloudwatch:TagResource"
+      "cloudwatch:TagResource",
+      "cloudwatch:PutDashboard",
+      "cloudwatch:DeleteDashboards"
     ]
     resources = ["*"]
   }

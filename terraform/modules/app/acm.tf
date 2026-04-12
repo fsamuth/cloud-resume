@@ -7,3 +7,8 @@ resource "aws_acm_certificate" "resume" {
     create_before_destroy = true
   }
 }
+
+resource "aws_acm_certificate_validation" "resume" {
+  certificate_arn = aws_acm_certificate.resume.arn
+  provider        = aws.us_east_1
+}

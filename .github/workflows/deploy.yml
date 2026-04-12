@@ -10,6 +10,11 @@ on:
       - '.github/workflows/**'
   workflow_dispatch: # allow manual trigger
 
+permissions:
+  id-token: write
+  contents: read
+  issues: write # required for ZAP to open scan report issues
+
 # Cancel in-progress runs on the same branch when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

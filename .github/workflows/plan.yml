@@ -88,8 +88,8 @@ jobs:
 
       - name: Run TFLint
         run: |
-          tflint --init
-          tflint
+          tflint --init --config "$GITHUB_WORKSPACE/terraform/modules/app/.tflint.hcl"
+          tflint --config "$GITHUB_WORKSPACE/terraform/modules/app/.tflint.hcl"
 
       # Scan Terraform files for security issues, upload results to GitHub Security tab
       - name: Run Checkov

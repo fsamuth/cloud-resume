@@ -71,7 +71,7 @@ resource "aws_lambda_function" "visitor_counter" {
   #checkov:skip=CKV_AWS_173:TABLE_NAME environment variable is not sensitive data
   function_name = "${var.project_name}-visitor-counter"
   role          = aws_iam_role.lambda.arn
-  s3_bucket     = "${var.project_name}-artifacts"
+  s3_bucket     = var.artifacts_bucket
   s3_key        = var.lambda_s3_key
   runtime       = "python3.13"
   handler       = "counter.handler"

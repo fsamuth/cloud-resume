@@ -19,13 +19,12 @@ variable "alert_email" {
   type        = string
 }
 
-variable "environment" {
-  description = "Environment name — used for cost allocation tags"
-  type        = string
-  default     = "prod"
-}
-
 variable "lambda_s3_key" {
   description = "S3 key of the Lambda deployment package"
+  type        = string
+}
+
+variable "artifacts_bucket" {
+  description = "S3 bucket containing Lambda deployment artifacts"
   type        = string
 }

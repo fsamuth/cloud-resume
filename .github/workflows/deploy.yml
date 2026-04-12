@@ -44,27 +44,33 @@ jobs:
           zip /tmp/counter.zip counter.py
           HASH=$(sha256sum counter.py | cut -d' ' -f1)
           echo "s3_key=lambda/$HASH/counter.zip" >> $GITHUB_OUTPUT
-          aws s3 ls s3://${{ vars.PROJECT_NAME }}-artifacts/lambda/$HASH/counter.zip || \
-            aws s3 cp /tmp/counter.zip s3://${{ vars.PROJECT_NAME }}-artifacts/lambda/$HASH/counter.zip
+          aws s3 ls s3://fsamuth-resume-artifacts/lambda/$HASH/counter.zip || \
+            aws s3 cp /tmp/counter.zip s3://fsamuth-resume-artifacts/lambda/$HASH/counter.zip
 
-  plan:
-    name: Plan
+  # ── Staging ────────────────────────────────────────────────────────────────
+
+  plan-staging:
+    name: Plan (staging)
     runs-on: ubuntu-latest
     needs: build
+    environment: staging # provides PROJECT_NAME and DOMAIN_NAME vars
 
     permissions:
-      id-token: write # required for OIDC authentication with AWS
+      id-token: write
       contents: read
 
     outputs:
-      website: ${{ steps.flags.outputs.website }}
       has_changes: ${{ steps.plan.outputs.has_changes }}
+      website: ${{ steps.flags.outputs.website }}
+
+    defaults:
+      run:
+        working-directory: terraform/envs/staging
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
-      # Detect whether website files changed to conditionally sync S3 and invalidate cache
       - name: Detect changed paths
         id: changes
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
@@ -73,7 +79,6 @@ jobs:
             website:
               - 'website/public/**'
 
-      # On workflow_dispatch, force all steps to run regardless of changed files
       - name: Set run flags
         id: flags
         run: |
@@ -83,7 +88,6 @@ jobs:
             echo "website=${{ steps.changes.outputs.website }}" >> $GITHUB_OUTPUT
           fi
 
-      # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
@@ -94,12 +98,10 @@ jobs:
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
       - name: Tofu Init
-        working-directory: terraform/app
         run: tofu init
 
       - name: Tofu Plan
         id: plan
-        working-directory: terraform/app
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
@@ -110,36 +112,35 @@ jobs:
           tofu plan -detailed-exitcode -out=tfplan
           EXIT_CODE=$?
           set -e
-
-          # Exit 1 = error, fail immediately
           if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
-
-          # Exit 0 = no changes, exit 2 = changes
           echo "has_changes=$([ $EXIT_CODE -eq 2 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
       - name: Upload plan
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
         with:
-          name: tfplan
-          path: terraform/app/tfplan
+          name: tfplan-staging
+          path: terraform/envs/staging/tfplan
           retention-days: 1
 
-  apply:
-    name: Apply
-    needs: [build, plan]
+  apply-staging:
+    name: Apply (staging)
     runs-on: ubuntu-latest
-    environment: production # requires manual approval
-    if: needs.plan.outputs.has_changes == 'true'
+    needs: [build, plan-staging]
+    environment: staging
+    if: needs.plan-staging.outputs.has_changes == 'true'
 
     permissions:
-      id-token: write # required for OIDC authentication with AWS
+      id-token: write
       contents: read
+
+    defaults:
+      run:
+        working-directory: terraform/envs/staging
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
-      # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
@@ -150,39 +151,40 @@ jobs:
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
       - name: Tofu Init
-        working-directory: terraform/app
         run: tofu init
 
       - name: Download plan
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
         with:
-          name: tfplan
-          path: terraform/app/
+          name: tfplan-staging
+          path: terraform/envs/staging/
 
       - name: Tofu Apply
-        working-directory: terraform/app
         run: tofu apply -auto-approve tfplan
 
-  sync:
-    name: Sync website
-    needs: [plan, apply]
+  sync-staging:
+    name: Sync website (staging)
     runs-on: ubuntu-latest
-    # Run if website changed AND apply didn't fail (covers both apply succeeded or was skipped)
+    needs: [plan-staging, apply-staging]
+    environment: staging
     if: |
       always() &&
-      needs.plan.outputs.website == 'true' &&
-      needs.apply.result != 'failure'
+      needs.plan-staging.outputs.website == 'true' &&
+      needs.apply-staging.result != 'failure'
 
     permissions:
-      id-token: write # required for OIDC authentication with AWS
+      id-token: write
       contents: read
-      issues: write   # required for ZAP to open scan report issues
+      issues: write # required for ZAP to open scan report issues
+
+    defaults:
+      run:
+        working-directory: terraform/envs/staging
 
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
-      # Authenticate via OIDC — no long-lived credentials stored in secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
         with:
@@ -193,27 +195,174 @@ jobs:
         uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
 
       - name: Tofu Init
-        working-directory: terraform/app
         run: tofu init
 
       - name: Sync website to S3
         run: |
-          API_URL=$(cd terraform/app && tofu output -raw api_gateway_url | sed 's|/$||')
-          sed -i "s|__API_URL__|$API_URL|g" website/public/counter.js
-          BUCKET=$(cd terraform/app && tofu output -raw s3_bucket_name)
-          aws s3 sync website/public/ s3://$BUCKET/ --delete
+          API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
+          sed -i "s|__API_URL__|$API_URL|g" ../../website/public/counter.js
+          BUCKET=$(tofu output -raw s3_bucket_name)
+          aws s3 sync ../../website/public/ s3://$BUCKET/ --delete
 
       - name: Invalidate CloudFront cache
         run: |
-          DIST_ID=$(cd terraform/app && tofu output -raw cloudfront_distribution_id)
+          DIST_ID=$(tofu output -raw cloudfront_distribution_id)
           aws cloudfront create-invalidation \
             --distribution-id $DIST_ID \
             --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
 
-      # Passive security scan — only runs when website content changed
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
         with:
           target: "https://${{ vars.DOMAIN_NAME }}"
+          fail_action: false
+          issue_title: "ZAP Baseline Scan Report (staging)"
+
+  # ── Production ─────────────────────────────────────────────────────────────
+
+  plan-production:
+    name: Plan (production)
+    runs-on: ubuntu-latest
+    # Wait for all staging jobs to complete — skipped staging jobs are fine
+    needs: [build, plan-staging, apply-staging, sync-staging]
+    if: |
+      always() &&
+      needs.plan-staging.result == 'success' &&
+      needs.apply-staging.result != 'failure' &&
+      needs.sync-staging.result != 'failure'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+      website: ${{ steps.flags.outputs.website }}
+
+    defaults:
+      run:
+        working-directory: terraform/envs/production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        with:
+          filters: |
+            website:
+              - 'website/public/**'
+
+      - name: Set run flags
+        id: flags
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "website=true" >> $GITHUB_OUTPUT
+          else
+            echo "website=${{ steps.changes.outputs.website }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        run: tofu init
+
+      - name: Tofu Plan
+        id: plan
+        env:
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+          # Production values are not secret — hardcoded to avoid a second approval gate
+          TF_VAR_project_name: "fsamuth-resume"
+          TF_VAR_domain_name: "fidele.samuth.com"
+          TF_VAR_lambda_s3_key: ${{ needs.build.outputs.lambda_s3_key }}
+        run: |
+          set +e
+          tofu plan -detailed-exitcode -out=tfplan
+          EXIT_CODE=$?
+          set -e
+          if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
+          echo "has_changes=$([ $EXIT_CODE -eq 2 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+      - name: Upload plan
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
+        with:
+          name: tfplan-production
+          path: terraform/envs/production/tfplan
+          retention-days: 1
+
+  apply-production:
+    name: Apply + Sync (production)
+    runs-on: ubuntu-latest
+    needs: [build, plan-production]
+    environment: production # single approval gate — reviewer sees plan output above before approving
+    if: |
+      needs.plan-production.outputs.has_changes == 'true' ||
+      needs.plan-production.outputs.website == 'true'
+
+    permissions:
+      id-token: write
+      contents: read
+      issues: write # required for ZAP to open scan report issues
+
+    defaults:
+      run:
+        working-directory: terraform/envs/production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        run: tofu init
+
+      - name: Download plan
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: tfplan-production
+          path: terraform/envs/production/
+
+      - name: Tofu Apply
+        if: needs.plan-production.outputs.has_changes == 'true'
+        run: tofu apply -auto-approve tfplan
+
+      - name: Sync website to S3
+        if: needs.plan-production.outputs.website == 'true'
+        run: |
+          API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
+          sed -i "s|__API_URL__|$API_URL|g" ../../website/public/counter.js
+          BUCKET=$(tofu output -raw s3_bucket_name)
+          aws s3 sync ../../website/public/ s3://$BUCKET/ --delete
+
+      - name: Invalidate CloudFront cache
+        if: needs.plan-production.outputs.website == 'true'
+        run: |
+          DIST_ID=$(tofu output -raw cloudfront_distribution_id)
+          aws cloudfront create-invalidation \
+            --distribution-id $DIST_ID \
+            --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
+
+      - name: ZAP Baseline Scan
+        if: needs.plan-production.outputs.website == 'true'
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
+        with:
+          target: "https://fidele.samuth.com"
           fail_action: false
           issue_title: "ZAP Baseline Scan Report"

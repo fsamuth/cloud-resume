@@ -49,7 +49,7 @@ jobs:
           path: pytest-report.xml
           reporter: java-junit
 
-  # Runs in parallel with test — requires AWS credentials
+  # Plans against staging — the first stop on the trunk-based deployment pipeline
   plan:
     name: Plan
     runs-on: ubuntu-latest
@@ -58,6 +58,10 @@ jobs:
       id-token: write    # required for OIDC authentication with AWS
       contents: read
       pull-requests: write # required to post the plan comment on the PR
+
+    defaults:
+      run:
+        working-directory: terraform/envs/staging
 
     steps:
       - name: Checkout code
@@ -76,23 +80,22 @@ jobs:
       - name: Compute Lambda package key
         id: build
         run: |
-          HASH=$(sha256sum website/counter.py | cut -d' ' -f1)
+          HASH=$(sha256sum ../../website/counter.py | cut -d' ' -f1)
           echo "s3_key=lambda/$HASH/counter.zip" >> $GITHUB_OUTPUT
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@b480b8fcdaa6f2c577f8e4fa799e89e756bb7c93 #v6.2.2
 
       - name: Run TFLint
-        working-directory: terraform/app
         run: |
-          tflint --init
-          tflint
+          tflint --init --config "$GITHUB_WORKSPACE/terraform/modules/app/.tflint.hcl"
+          tflint --config "$GITHUB_WORKSPACE/terraform/modules/app/.tflint.hcl"
 
       # Scan Terraform files for security issues, upload results to GitHub Security tab
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@0ce65fae06c148e349f955c3c35ad049c11e838c #v12.3092.0
         with:
-          directory: ./terraform/app/
+          directory: ./terraform/envs/staging/
           framework: terraform
           quiet: true
           soft_fail: true
@@ -106,15 +109,13 @@ jobs:
           sarif_file: checkov.sarif
 
       - name: Tofu Init
-        working-directory: terraform/app
         run: tofu init
 
       - name: Tofu Plan
-        working-directory: terraform/app
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
-          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
-          TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+          TF_VAR_project_name: "fsamuth-resume-staging"
+          TF_VAR_domain_name: "staging.fidele.samuth.com"
           TF_VAR_lambda_s3_key: ${{ steps.build.outputs.s3_key }}
         run: tofu plan -out=tfplan
 
@@ -124,5 +125,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           terraform-cmd: tofu
-          working-directory: terraform/app
+          working-directory: terraform/envs/staging
           planfile: tfplan

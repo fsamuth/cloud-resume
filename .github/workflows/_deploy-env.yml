@@ -1,0 +1,165 @@
+name: Deploy environment (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment (staging or production)"
+        type: string
+        required: true
+      lambda_s3_key:
+        description: "S3 key of the Lambda deployment package"
+        type: string
+        required: true
+      domain_name:
+        description: "URL to run ZAP baseline scan against"
+        type: string
+        required: true
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false # access env vars/secrets without creating a deployment record
+
+    permissions:
+      id-token: write
+      contents: read
+
+    defaults:
+      run:
+        working-directory: terraform/envs/${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        run: tofu init
+
+      - name: Tofu Plan
+        id: plan
+        env:
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
+          TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+          TF_VAR_lambda_s3_key: ${{ inputs.lambda_s3_key }}
+        run: |
+          set +e
+          tofu plan -detailed-exitcode -out=tfplan
+          EXIT_CODE=$?
+          set -e
+          if [ $EXIT_CODE -eq 1 ]; then exit 1; fi
+
+      - name: Upload plan
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: terraform/envs/${{ inputs.environment }}/tfplan
+          retention-days: 1
+
+  apply:
+    name: Apply
+    runs-on: ubuntu-latest
+    needs: plan
+    environment: ${{ inputs.environment }} # approval gate for production
+
+    permissions:
+      id-token: write
+      contents: read
+
+    defaults:
+      run:
+        working-directory: terraform/envs/${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        run: tofu init
+
+      - name: Download plan
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: terraform/envs/${{ inputs.environment }}/
+
+      - name: Tofu Apply
+        run: tofu apply -auto-approve tfplan
+
+  sync:
+    name: Sync website
+    runs-on: ubuntu-latest
+    needs: apply
+    # No environment key — uses repo-level secrets only, so no second approval needed
+    if: needs.apply.result == 'success'
+
+    permissions:
+      id-token: write
+      contents: read
+      issues: write # required for ZAP to open scan report issues
+
+    defaults:
+      run:
+        working-directory: terraform/envs/${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb #v2.0.0
+
+      - name: Tofu Init
+        run: tofu init
+
+      - name: Sync website to S3
+        run: |
+          API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
+          sed -i "s|__API_URL__|$API_URL|g" ${{ github.workspace }}/website/public/counter.js
+          BUCKET=$(tofu output -raw s3_bucket_name)
+          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete \
+            --exclude "*.html" --cache-control "max-age=31536000,immutable"
+          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete \
+            --exclude "*" --include "*.html" --cache-control "no-cache"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DIST_ID=$(tofu output -raw cloudfront_distribution_id)
+          aws cloudfront create-invalidation \
+            --distribution-id $DIST_ID \
+            --invalidation-batch "{\"Paths\":{\"Quantity\":1,\"Items\":[\"/*\"]},\"CallerReference\":\"github-actions-${{ github.run_id }}\"}"
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0
+        with:
+          target: ${{ inputs.domain_name }}
+          fail_action: false
+          issue_title: "ZAP Baseline Scan Report (${{ inputs.environment }})"

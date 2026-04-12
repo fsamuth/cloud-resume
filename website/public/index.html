@@ -116,6 +116,7 @@
           <span class="tag">CloudWatch</span>
           <span class="tag">SQS</span>
           <span class="tag">SNS</span>
+          <span class="tag">Budgets</span>
         </div>
       </div>
     </div>
@@ -202,28 +203,31 @@
           <div class="tl-top">
             <strong>CV Cloud</strong>
           </div>
-          <div class="tl-role">AWS · OpenTofu · GitHub Actions · Lambda · DynamoDB</div>
+          <div class="tl-role">AWS · OpenTofu · GitHub Actions · Lambda · DynamoDB · CloudWatch</div>
           <ul>
             <li>
-              <b>Infrastructure</b>
+              <b>Infrastructure as Code</b>
               <ul>
-                <li>Hébergement statique sur <b>S3</b> avec distribution <b>CloudFront</b>, certificat <b>ACM</b> et domaine personnalisé</li>
-                <li>Infrastructure as Code avec <b>OpenTofu</b>, state distant sur S3 avec verrouillage <b>DynamoDB</b></li>
-                <li>Sécurité : Origin Access Control, headers de sécurité, restriction géographique, chiffrement <b>KMS</b></li>
+                <li>Module <b>OpenTofu</b> réutilisable avec deux environnements isolés (staging / production), state distant chiffré <b>KMS</b> sur <b>S3</b> avec verrouillage natif</li>
+                <li>Hébergement statique <b>S3</b> + <b>CloudFront</b> avec Origin Access Control, headers de sécurité (HSTS, CSP, COEP), restriction géographique et certificat <b>ACM</b> validé automatiquement</li>
+                <li>Authentification <b>OIDC</b> sans credentials long-lived pour GitHub Actions, rôle IAM au moindre privilège scopé par environnement</li>
               </ul>
             </li>
             <li>
-              <b>Backend</b>
+              <b>Backend serverless</b>
               <ul>
-                <li>Compteur de visites serverless : <b>API Gateway HTTP</b> + <b>Lambda Python</b> + <b>DynamoDB</b></li>
-                <li>Traçage distribué avec <b>AWS X-Ray</b>, Dead Letter Queue <b>SQS</b> pour la résilience</li>
+                <li>Compteur de visites : <b>API Gateway HTTP</b> + <b>Lambda Python</b> + <b>DynamoDB</b> on-demand avec PITR</li>
+                <li>Traçage distribué <b>AWS X-Ray</b>, Dead Letter Queue <b>SQS</b> et alertes <b>CloudWatch</b> / <b>SNS</b> sur erreurs et latence</li>
+                <li>Dashboard <b>CloudWatch</b> unifié : invocations Lambda (p50/p99), latence API Gateway, capacité DynamoDB, messages DLQ</li>
               </ul>
             </li>
             <li>
               <b>CI/CD & Qualité</b>
               <ul>
-                <li>Pipeline <b>GitHub Actions</b> : tests pytest/moto, tflint, checkov</li>
-                <li>Alertes <b>CloudWatch</b> sur erreurs Lambda et API Gateway via <b>SNS</b></li>
+                <li>Pipeline trunk-based : staging automatique → scan sécurité <b>ZAP</b> → approbation manuelle production</li>
+                <li>Workflow réutilisable <b>GitHub Actions</b> (plan / apply / sync) paramétré par environnement</li>
+                <li>Pull requests : plan OpenTofu commenté, estimation de coût <b>Infracost</b>, analyse statique <b>TFLint</b> / <b>Checkov</b> / <b>Bandit</b></li>
+                <li>Détection de dérive d'infrastructure quotidienne, hooks pre-commit, tests unitaires <b>pytest</b> / <b>moto</b></li>
               </ul>
             </li>
           </ul>

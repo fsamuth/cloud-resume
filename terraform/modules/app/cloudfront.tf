@@ -37,6 +37,12 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
     }
   }
 
+  remove_headers_config {
+    items {
+      header = "Server"
+    }
+  }
+
   custom_headers_config {
     items {
       header   = "Cross-Origin-Embedder-Policy"

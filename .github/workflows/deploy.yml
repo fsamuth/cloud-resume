@@ -219,7 +219,10 @@ jobs:
           API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" ${{ github.workspace }}/website/public/counter.js
           BUCKET=$(tofu output -raw s3_bucket_name)
-          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete
+          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete \
+            --exclude "*.html" --cache-control "max-age=31536000,immutable"
+          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete \
+            --exclude "*" --include "*.html" --cache-control "no-cache"
 
       - name: Invalidate CloudFront cache
         if: steps.flags.outputs.website == 'true'
@@ -412,7 +415,10 @@ jobs:
           API_URL=$(tofu output -raw api_gateway_url | sed 's|/$||')
           sed -i "s|__API_URL__|$API_URL|g" ${{ github.workspace }}/website/public/counter.js
           BUCKET=$(tofu output -raw s3_bucket_name)
-          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete
+          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete \
+            --exclude "*.html" --cache-control "max-age=31536000,immutable"
+          aws s3 sync ${{ github.workspace }}/website/public/ s3://$BUCKET/ --delete \
+            --exclude "*" --include "*.html" --cache-control "no-cache"
 
       - name: Invalidate CloudFront cache
         if: steps.flags.outputs.website == 'true'

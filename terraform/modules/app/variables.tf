@@ -28,3 +28,9 @@ variable "artifacts_bucket" {
   description = "S3 bucket containing Lambda deployment artifacts"
   type        = string
 }
+
+variable "create_dashboard" {
+  description = "Whether to create a CloudWatch dashboard for this environment"
+  type        = bool
+  default     = false
+}

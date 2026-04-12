@@ -30,6 +30,11 @@ output "lambda_s3_key" {
   value = aws_lambda_function.visitor_counter.s3_key
 }
 
+output "dashboard_url" {
+  description = "CloudWatch dashboard URL (null if dashboard not created)"
+  value       = var.create_dashboard ? "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${aws_cloudwatch_dashboard.resume[0].dashboard_name}" : null
+}
+
 output "acm_validation_records" {
   description = "CNAME records to add to your DNS provider to validate the ACM certificate"
   value = {

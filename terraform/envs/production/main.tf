@@ -12,4 +12,5 @@ module "app" {
   aws_region       = var.aws_region
   lambda_s3_key    = var.lambda_s3_key
   artifacts_bucket = "fsamuth-resume-artifacts"
+  create_dashboard = true
 }

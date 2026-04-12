@@ -1,4 +1,4 @@
-name: Deploy environment (reusable)
+name: Deploy environment
 
 on:
   workflow_call:
@@ -100,7 +100,6 @@ jobs:
     name: Sync website
     runs-on: ubuntu-latest
     needs: apply
-    # No environment key — uses repo-level secrets only, so no second approval needed
     if: needs.apply.result == 'success'
 
     defaults:

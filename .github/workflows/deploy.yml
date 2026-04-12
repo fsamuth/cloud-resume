@@ -64,7 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: staging
     if: needs.staging.result == 'success'
-    environment: staging
+    environment:
+      name: staging
+      deployment: false # access env vars/secrets without creating a deployment record
     steps:
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 #v0.15.0

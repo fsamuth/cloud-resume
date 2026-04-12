@@ -14,7 +14,9 @@ jobs:
     permissions:
       contents: read
       issues: write # required for ZAP to open scan report issues
-
+    environment:
+      name: staging
+      deployment: false # access env vars/secrets without creating a deployment record
     steps:
       # Passive security scan — no attack payloads, safe against production
       - name: ZAP Baseline Scan

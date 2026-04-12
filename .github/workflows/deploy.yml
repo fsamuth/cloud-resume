@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [apply-staging]
     environment: staging
-    if: always() && needs.apply-staging.result != 'failure'
+    if: needs.apply-staging.result == 'success'
 
     permissions:
       id-token: write
@@ -359,7 +359,7 @@ jobs:
     name: Sync website (production)
     runs-on: ubuntu-latest
     needs: [apply-production]
-    if: always() && needs.apply-production.result != 'failure'
+    if: needs.apply-production.result == 'success'
 
     permissions:
       id-token: write

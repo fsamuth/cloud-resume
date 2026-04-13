@@ -170,6 +170,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "cloudfront:CreateResponseHeadersPolicy",
       "cloudfront:UpdateResponseHeadersPolicy",
       "cloudfront:DeleteResponseHeadersPolicy",
+      "cloudfront:CreateFunction",
+      "cloudfront:UpdateFunction",
+      "cloudfront:DeleteFunction",
+      "cloudfront:PublishFunction",
       "cloudfront:TagResource"
     ]
     resources = ["*"]
@@ -184,7 +188,10 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "cloudfront:GetResponseHeadersPolicy",
       "cloudfront:GetCachePolicy",
       "cloudfront:ListCachePolicies",
-      "cloudfront:ListTagsForResource"
+      "cloudfront:ListTagsForResource",
+      "cloudfront:GetFunction",
+      "cloudfront:ListFunctions",
+      "cloudfront:DescribeFunction"
     ]
     resources = ["*"]
   }

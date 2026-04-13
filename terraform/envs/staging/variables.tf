@@ -29,3 +29,10 @@ variable "lambda_s3_key" {
   description = "S3 key of the Lambda deployment package"
   type        = string
 }
+
+variable "basic_auth_credentials" {
+  description = "Base64-encoded basic auth credentials (user:pass). Leave empty to disable."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

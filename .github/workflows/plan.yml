@@ -53,6 +53,9 @@ jobs:
   plan:
     name: Plan
     runs-on: ubuntu-latest
+    environment:
+      name: staging
+      deployment: false # access staging secrets without creating a deployment record
 
     permissions:
       id-token: write    # required for OIDC authentication with AWS
@@ -114,9 +117,10 @@ jobs:
       - name: Tofu Plan
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
-          TF_VAR_project_name: "fsamuth-resume-staging"
-          TF_VAR_domain_name: "staging.fidele.samuth.com"
+          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
+          TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
           TF_VAR_lambda_s3_key: ${{ steps.build.outputs.s3_key }}
+          TF_VAR_basic_auth_credentials: ${{ secrets.BASIC_AUTH_CREDENTIALS }}
         run: tofu plan -out=tfplan
 
       # Posts the plan diff as a comment on the PR for review

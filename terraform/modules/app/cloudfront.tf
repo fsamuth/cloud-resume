@@ -1,3 +1,28 @@
+resource "aws_cloudfront_function" "basic_auth" {
+  count    = var.basic_auth_credentials != "" ? 1 : 0
+  provider = aws.us_east_1
+  name     = "${var.project_name}-basic-auth"
+  runtime  = "cloudfront-js-2.0"
+  publish  = true
+  code     = <<-EOT
+    function handler(event) {
+      var request = event.request;
+      var headers = request.headers;
+      var expected = "Basic ${var.basic_auth_credentials}";
+
+      if (typeof headers.authorization === "undefined" || headers.authorization.value !== expected) {
+        return {
+          statusCode: 401,
+          statusDescription: "Unauthorized",
+          headers: { "www-authenticate": { value: 'Basic realm="Staging"' } }
+        };
+      }
+
+      return request;
+    }
+  EOT
+}
+
 data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = "Managed-CachingOptimized"
 }
@@ -100,6 +125,13 @@ resource "aws_cloudfront_distribution" "resume" {
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers.id
 
+    dynamic "function_association" {
+      for_each = var.basic_auth_credentials != "" ? [1] : []
+      content {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.basic_auth[0].arn
+      }
+    }
   }
 
   custom_error_response {

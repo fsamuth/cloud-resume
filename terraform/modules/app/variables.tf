@@ -34,3 +34,10 @@ variable "create_dashboard" {
   type        = bool
   default     = false
 }
+
+variable "basic_auth_credentials" {
+  description = "Base64-encoded basic auth credentials (user:pass). Leave empty to disable."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

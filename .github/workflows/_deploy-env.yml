@@ -47,6 +47,7 @@ jobs:
           TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
           TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
           TF_VAR_lambda_s3_key: ${{ inputs.lambda_s3_key }}
+          TF_VAR_basic_auth_credentials: ${{ secrets.BASIC_AUTH_CREDENTIALS }}
         run: |
           set +e
           tofu plan -detailed-exitcode -out=tfplan
@@ -94,6 +95,8 @@ jobs:
           path: terraform/envs/${{ inputs.environment }}/
 
       - name: Tofu Apply
+        env:
+          TF_VAR_basic_auth_credentials: ${{ secrets.BASIC_AUTH_CREDENTIALS }}
         run: tofu apply -auto-approve tfplan
 
   sync:

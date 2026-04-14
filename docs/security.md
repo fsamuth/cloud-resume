@@ -1,6 +1,16 @@
 # Security
 
-This document explains the security measures in place, written for readers who are not familiar with web or cloud security.
+This document explains the security measures in place.
+
+---
+
+## Geographic restriction
+
+CloudFront is configured to only serve traffic from **France**. Requests originating from any other country receive a `403 Forbidden` response at the edge, before they ever reach S3 or the API.
+
+This reduces the attack surface by blocking automated scanners, bots, and opportunistic probes that typically originate outside the target geography. It also limits the blast radius of any future vulnerability — an attacker would need to route traffic through France to exploit it.
+
+> To lift or change the restriction, update the `geo_restriction` block in `terraform/modules/app/cloudfront.tf`.
 
 ---
 

@@ -6,6 +6,29 @@ Procedures for handling operational problems. Each runbook describes the symptom
 
 ---
 
+## Finding resource names
+
+Many runbooks reference `TABLE_NAME`, `BUCKET_NAME`, etc. Retrieve them from Terraform outputs:
+
+```bash
+# Production
+cd terraform/envs/production && tofu init -reconfigure && tofu output
+
+# Staging
+cd terraform/envs/staging && tofu init -reconfigure && tofu output
+```
+
+| Placeholder | Output key |
+|---|---|
+| `BUCKET_NAME` | `s3_bucket_name` |
+| `DISTRIBUTION_ID` | `cloudfront_distribution_id` |
+| `FUNCTION_NAME` | derived from `PROJECT_NAME`: `<project_name>-counter` |
+| `TABLE_NAME` | derived from `PROJECT_NAME`: `<project_name>-visitors` |
+| `QUEUE_NAME` | derived from `PROJECT_NAME`: `<project_name>-dlq` |
+| `CERTIFICATE_ARN` | visible in AWS Certificate Manager console (us-east-1 region) |
+
+---
+
 ## Table of contents
 
 - [Roll back a website deployment](#roll-back-a-website-deployment)

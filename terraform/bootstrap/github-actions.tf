@@ -293,6 +293,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     effect = "Allow"
     actions = [
       "logs:DescribeLogGroups",
+      "logs:DescribeMetricFilters",
       "logs:ListTagsLogGroup",
       "logs:ListTagsForResource"
     ]
@@ -306,6 +307,8 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "logs:CreateLogGroup",
       "logs:DeleteLogGroup",
       "logs:PutRetentionPolicy",
+      "logs:PutMetricFilter",
+      "logs:DeleteMetricFilter",
       "logs:TagResource"
     ]
     resources = ["arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group:*"]
